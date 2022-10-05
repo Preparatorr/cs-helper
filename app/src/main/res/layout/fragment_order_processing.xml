@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:contentDescription="@string/large_text"
+    tools:context=".fragments.OrderProcessingFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/order_process_main_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/order_process_ticket"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            android:textSize="@dimen/big_text_size"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Ticket ID" />
+
+        <TextView
+            android:id="@+id/order_process_order"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Order ID"
+            android:textSize="@dimen/text_size"
+            app:layout_constraintStart_toStartOf="@+id/order_process_ticket"
+            app:layout_constraintTop_toBottomOf="@+id/order_process_ticket" />
+
+        <TextView
+            android:id="@+id/order_process_company"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Company"
+            android:textSize="@dimen/text_size"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/order_process_order" />
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/order_process_order" />
+
+        <LinearLayout
+            android:id="@+id/order_steps_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/view"></LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
