@@ -73,6 +73,31 @@ public class OrderProcess {
         }
     }
 
+    public String RedminePrint()
+    {
+        StringBuilder result = new StringBuilder();
+
+        for(ProcessStep step : OrderSteps)
+        {
+            result.append("\n ").append(step.name).append(" - ").append(step.status.toString());
+            if(step.type == 1)
+            {
+                for(ComponentProcess component : Components)
+                {
+                    result.append("\n  ").append(component.Quantity).append(" - ").append(component.Name);
+                    for(String key : component.steps.keySet())
+                    {
+                        result.append("\n    ").append(key).append(" - ");
+                        result.append((component.steps.get(key)?"DONE":"NOT DONE"));
+                    }
+                }
+            }
+
+        }
+
+        return result.toString();
+    }
+
     @NonNull
     @Override
     public String toString() {

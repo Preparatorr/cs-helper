@@ -1,10 +1,17 @@
 package com.matej.cshelper.network.redmine;
 
+import android.content.DialogInterface;
 import android.util.Log;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.view.ContextThemeWrapper;
+
+import com.matej.cshelper.MainActivity;
+import com.matej.cshelper.R;
 import com.matej.cshelper.config.SecretKeys;
 import com.matej.cshelper.network.WebRequest;
 import com.matej.cshelper.network.redmine.entities.*;
+import com.matej.cshelper.storage.OrderProcess;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,9 +37,13 @@ public class RedmineConnector {
         ArrayList<Order> result = new ArrayList<>();
         String url = SecretKeys.getInstance().RedmineURL + "issues.json?"+SecretKeys.getInstance().RedmineQuery;
         Log.d("URL ", url);
-        WebRequest request = new WebRequest(url, WebRequest.Method.Get);
+        WebRequest request = new WebRequest(url, WebRequest.Method.Get,null);
         String response = request.Invoke();
         //TODO: No connectivity to Redmine
+        if(response == null)
+        {
+            return new ArrayList<>();
+        }
         try {
             JSONArray issues = new JSONObject(response).getJSONArray("issues");
             Log.d(TAG,"issues: " + issues.length());
@@ -51,7 +62,7 @@ public class RedmineConnector {
     public Order GetOrder (String id)
     {
         String url = SecretKeys.getInstance().RedmineURL + "issues/"+id+".json";
-        WebRequest request = new WebRequest(url, WebRequest.Method.Get);
+        WebRequest request = new WebRequest(url, WebRequest.Method.Get,null);
         String response = request.Invoke();
         try {
             return ParseOrder(new JSONObject(response).getJSONObject("issue"));
@@ -59,6 +70,27 @@ public class RedmineConnector {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public boolean UpdateIssue(OrderProcess order)
+    {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            JSONObject notesObject = new JSONObject();
+            String items = order.RedminePrint().replace("\r ","");
+            notesObject.put("notes","Tech department update:"+items);
+            jsonObject.put("issue",notesObject);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        String url = SecretKeys.getInstance().RedmineURL + "issues/"+order.TicketID+".json";
+        Log.d(TAG,url);
+        String body = jsonObject.toString();
+        Log.d(TAG,body);
+        WebRequest request = new WebRequest(url, WebRequest.Method.Put,body);
+        String response = request.Invoke();
+        Log.d(TAG +"Response",response);
+        return true;
     }
 
     private Order ParseOrder (JSONObject issue)
@@ -89,9 +121,13 @@ public class RedmineConnector {
             String descString = issue.getString("description");
             int author = issue.getJSONObject("author").getInt("id");
             if(descString.isEmpty())
+            {
                 return null;
-            if(author != 34)
+            }
+            if(author != 34 && !order.TicketID.equals("24569"))
+            {
                 return null;
+            }
             boolean newFormat = false;
             for(String line: descString.split("\n"))
             {

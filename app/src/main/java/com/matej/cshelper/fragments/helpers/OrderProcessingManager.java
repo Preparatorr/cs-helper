@@ -28,6 +28,8 @@ public class OrderProcessingManager extends InstanceBase {
 
     public OrderProcess GetOrder(String ticketID)
     {
+        if(this.orders == null)
+            orders = new HashMap<>();
         if(this.orders.containsKey(ticketID))
             return this.orders.get(ticketID);
         else

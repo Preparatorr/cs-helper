@@ -21,6 +21,7 @@ import com.matej.cshelper.MainActivity;
 import com.matej.cshelper.R;
 import com.matej.cshelper.core.InstanceProvider;
 import com.matej.cshelper.fragments.helpers.OrderProcessingManager;
+import com.matej.cshelper.network.redmine.RedmineConnector;
 import com.matej.cshelper.storage.ComponentProcess;
 import com.matej.cshelper.storage.OrderProcess;
 import com.matej.cshelper.storage.ProcessStep;
@@ -144,6 +145,8 @@ public class OrderProcessingFragment extends Fragment {
                         public void onClick(View view) {
                             Log.d(TAG,"Order done!");
                             order.Status = OrderProcess.OrderStatus.DONE;
+                            Log.d("ORDER DONE: ", order.RedminePrint());
+                            RedmineConnector.getInstance().UpdateIssue(order);
                         }
                     });
                     stepsLayout.addView(nextStep);

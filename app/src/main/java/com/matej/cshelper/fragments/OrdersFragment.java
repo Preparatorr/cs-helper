@@ -1,12 +1,16 @@
 package com.matej.cshelper.fragments;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -64,7 +68,19 @@ public class OrdersFragment extends Fragment {
             }
             mainLayout.addView(item);
         }
-
+        if(this.controller.ActiveOrders.size() == 0)
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(getActivity(), R.style.myDialog));
+            // Add the buttons
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // User clicked OK button
+                }
+            });
+            builder.setTitle("No connection to Redmine! Please restart app");
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
         return root;
     }
 
