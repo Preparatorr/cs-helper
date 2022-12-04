@@ -11,15 +11,21 @@ import com.matej.cshelper.network.redmine.entities.ServerComponent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
 
 public class OrderProcess {
 
     public enum OrderStatus
     {
-        DONE,
-        NOT_STARTED,
-        IN_PROGRESS
+        NEW,
+        COMPONENT_PREPARATION_START,
+        COMPONENT_PREPARATION_DONE,
+        BUILD_START,
+        BUILD_DONE,
+        BUILD_CHECK_START,
+        BUILD_CHECK_DONE,
+        EXPORT_START,
+        EXPORT_DONE,
+        ORDER_DONE
     }
 
     private static String TAG = "OrderProcess";
@@ -39,7 +45,7 @@ public class OrderProcess {
         OrderID = order.OrderID;
         Company = order.Company;
         Stresstest = order.Stresstest;
-        Status = OrderStatus.NOT_STARTED;
+        Status = OrderStatus.NEW;
 
         Components = new ArrayList<>();
         for (ServerComponent component: order.Components)

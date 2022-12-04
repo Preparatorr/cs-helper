@@ -2,7 +2,6 @@ package com.matej.cshelper.fragments;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,10 +57,10 @@ public class OrdersFragment extends Fragment {
             OrderProcess preocessedOrder = ((OrderProcessingManager)InstanceProvider.GetInstance(OrderProcessingManager.class)).GetOrder(order.TicketID);
             orderStatus.setText(preocessedOrder.Status.toString());
             switch(preocessedOrder.Status){
-                case DONE:
+                case BUILD_DONE:
                     orderStatus.setTextColor(getResources().getColor(R.color.green));
                     break;
-                case IN_PROGRESS:
+                case BUILD_START:
                     orderStatus.setTextColor(getResources().getColor(R.color.orange));
                 default:
                     break;

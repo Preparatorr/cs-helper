@@ -1,6 +1,5 @@
 package com.matej.cshelper.fragments;
 
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,6 +36,7 @@ public class OrderProcessingFragment extends Fragment {
 
     private String ticketID;
     private OrderProcess order;
+    private OrderProcessingFragment instance;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,11 +44,12 @@ public class OrderProcessingFragment extends Fragment {
         if (getArguments() != null) {
             this.ticketID = getArguments().getString(ARG_TICKET_ID);
             this.order = ((OrderProcessingManager)InstanceProvider.GetInstance(OrderProcessingManager.class)).GetOrder(this.ticketID);
-            this.order.Status = OrderProcess.OrderStatus.IN_PROGRESS;
+            this.order.Status = OrderProcess.OrderStatus.BUILD_START;
         }
         else
             Log.e(TAG, "Fatal: no ticket ID provided");
         Log.i(TAG, "onCreate " + this.ticketID);
+        this.instance = this;
     }
 
     @Override
@@ -109,7 +110,7 @@ public class OrderProcessingFragment extends Fragment {
                 sb.append(" - " + component.Quantity + "x" + component.Name + "\n");
             }
             items.setText(sb.toString());
-            items.setTextSize(getResources().getDimension(R.dimen.text_size));
+            items.setTextSize(getResources().getDimension(R.dimen.text_size_small));
             if(items.getParent() != null)
                 ((ViewGroup)items.getParent()).removeView(items);
             ((LinearLayout)stepView.findViewById(R.id.step_items)).addView(items);
@@ -146,9 +147,11 @@ public class OrderProcessingFragment extends Fragment {
                         @Override
                         public void onClick(View view) {
                             Log.d(TAG,"Order done!");
-                            order.Status = OrderProcess.OrderStatus.DONE;
+                            order.Status = OrderProcess.OrderStatus.BUILD_DONE;
                             Log.d("ORDER DONE: ", order.RedminePrint());
                             RedmineConnector.getInstance().UpdateIssue(order);
+                            Snackbar.make(view, "Sending update to Redmine", Snackbar.LENGTH_LONG).show();
+                            NavHostFragment.findNavController(instance).navigate(R.id.ordersFragment);
                         }
                     });
                     stepsLayout.addView(nextStep);
