@@ -110,6 +110,8 @@ public class OrderProcessingFragment extends Fragment {
             }
             items.setText(sb.toString());
             items.setTextSize(getResources().getDimension(R.dimen.text_size));
+            if(items.getParent() != null)
+                ((ViewGroup)items.getParent()).removeView(items);
             ((LinearLayout)stepView.findViewById(R.id.step_items)).addView(items);
         }
         if(step.type == 1)

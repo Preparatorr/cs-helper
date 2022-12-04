@@ -74,7 +74,7 @@ public class ComponentTestFragment extends Fragment {
                         new int[][]{
                                 new int[]{android.R.attr.state_enabled} //enabled
                         },
-                        new int[] {checkBox.getResources().getColor(R.color.white) }
+                        new int[] {checkBox.getResources().getColor(R.color.grey) }
                 );
                 checkBox.setTextColor(colorStateList);
                 checkBox.setButtonTintList(colorStateList);
