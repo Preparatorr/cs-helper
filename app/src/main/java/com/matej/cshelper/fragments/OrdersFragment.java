@@ -2,6 +2,7 @@ package com.matej.cshelper.fragments;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,18 +26,63 @@ import com.matej.cshelper.storage.OrderProcess;
 
 public class OrdersFragment extends Fragment {
 
+    public enum State
+    {
+        PREPARATION,
+        BUILD,
+        CHECK,
+        EXPEDITION
+    }
+    public static final String ARG_STATE = "state";
+    private State state;
     private OrderListController controller;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null)
+        {
+            this.state = (State)getArguments().getSerializable(ARG_STATE);
+        }
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        ((MainActivity) getActivity()).setActionBarTitle("Redmine orders");
+        switch(this.state)
+        {
+            case PREPARATION:
+                ((MainActivity) getActivity()).setActionBarTitle("Orders for preparation");
+                break;
+            case BUILD:
+                ((MainActivity) getActivity()).setActionBarTitle("Orders for build");
+                break;
+            default:
+                ((MainActivity) getActivity()).setActionBarTitle("Redmine orders");
+        }
+
         View root = inflater.inflate(R.layout.fragment_orders, container, false);
         LinearLayout mainLayout = root.findViewById(R.id.orders_list_layout);
         this.controller = (OrderListController) InstanceProvider.GetInstance(OrderListController.class);
         for(Order order : this.controller.ActiveOrders)
         {
+            OrderProcess preocessedOrder = ((OrderProcessingManager)InstanceProvider.GetInstance(OrderProcessingManager.class)).GetOrder(order.TicketID);
+            boolean ignore = false;
+            switch (this.state){
+                case BUILD:
+                    if(preocessedOrder.Status != OrderProcess.OrderStatus.COMPONENT_PREPARATION_DONE && preocessedOrder.Status != OrderProcess.OrderStatus.BUILD_START)
+                        ignore = true;
+                    break;
+                case PREPARATION:
+                    if(preocessedOrder.Status != OrderProcess.OrderStatus.NEW && preocessedOrder.Status != OrderProcess.OrderStatus.COMPONENT_PREPARATION_START)
+                        ignore = true;
+                default:
+                    break;
+            }
+
+            if(ignore)
+                continue;
             View item = inflater.inflate(R.layout.order_list_item,(ViewGroup) root,false);
             TextView ticketID = item.findViewById(R.id.order_ticket_id);
             ticketID.setText(order.TicketID);
@@ -44,6 +90,7 @@ public class OrdersFragment extends Fragment {
             orderID.setText(order.OrderID);
             TextView company = item.findViewById(R.id.order_company);
             company.setText(order.Company);
+
             item.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -54,7 +101,6 @@ public class OrdersFragment extends Fragment {
             });
 
             TextView orderStatus = item.findViewById(R.id.order_status);
-            OrderProcess preocessedOrder = ((OrderProcessingManager)InstanceProvider.GetInstance(OrderProcessingManager.class)).GetOrder(order.TicketID);
             orderStatus.setText(preocessedOrder.Status.toString());
             switch(preocessedOrder.Status){
                 case BUILD_DONE:
@@ -85,6 +131,15 @@ public class OrdersFragment extends Fragment {
 
     private void openOrder(Bundle args)
     {
-        NavHostFragment.findNavController(this).navigate(R.id.orderProcessingFragment, args);
+        switch(this.state)
+        {
+            case PREPARATION:
+                NavHostFragment.findNavController(this).navigate(R.id.componentPreparationFragment, args);
+                break;
+            case BUILD:
+                NavHostFragment.findNavController(this).navigate(R.id.orderProcessingFragment, args);
+                break;
+        }
+
     }
 }

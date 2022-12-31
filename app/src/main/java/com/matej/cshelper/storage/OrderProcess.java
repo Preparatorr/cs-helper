@@ -56,7 +56,6 @@ public class OrderProcess {
             c.Quantity = component.Quantity;
             c.steps = new HashMap<>();
             GlobalComponentsConfig config = FirebaseConnector.getInstance().ComponentsConfig;
-            Log.d(TAG, c.Type);
             ArrayList<String> list = config.components_config.get(c.Type);
             if(list == null)
             {

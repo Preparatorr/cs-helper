@@ -1,5 +1,7 @@
 package com.matej.cshelper.fragments.helpers;
 
+import static com.matej.cshelper.MainActivity.getContext;
+
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -50,7 +52,7 @@ public class OrderProcessingManager extends InstanceBase {
 
     public void saveOrders()
     {
-        SharedPreferences sharedPreferences = MainActivity.getContext().getSharedPreferences("orders", MainActivity.getContext().MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("orders", 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         Gson gson = new Gson();
 
@@ -63,7 +65,7 @@ public class OrderProcessingManager extends InstanceBase {
 
     private void loadOrders()
     {
-        SharedPreferences sharedPreferences = MainActivity.getContext().getSharedPreferences("orders", MainActivity.getContext().MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("orders", 0);
         Gson gson = new Gson();
         String json = sharedPreferences.getString("SavedOrders", "");
         Type type = new TypeToken<HashMap<String, OrderProcess>>(){}.getType();

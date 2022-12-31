@@ -5,9 +5,13 @@
         <item android:id="@+id/nav_home"
             android:title="Home"
             android:icon="@drawable/ic_baseline_home_24" />
+        <item android:id="@+id/nav_prepearation"
+            android:title="Preparation"
+            android:icon="@drawable/ic_baseline_assignment_24"
+            />
         <item android:id="@+id/nav_orders"
             android:title="Orders"
-            android:icon="@drawable/ic_baseline_assignment_24" />
+            android:icon="@drawable/ic_baseline_build_24" />
         <item android:id="@+id/nav_settings"
             android:title="Settings"
             android:icon="@drawable/ic_baseline_settings_24" />

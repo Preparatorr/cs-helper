@@ -18,6 +18,7 @@ import android.widget.Toolbar;
 
 import com.google.android.material.navigation.NavigationView;
 import com.matej.cshelper.core.InstanceProvider;
+import com.matej.cshelper.fragments.OrdersFragment;
 import com.matej.cshelper.fragments.helpers.OrderListController;
 import com.matej.cshelper.fragments.helpers.OrderProcessingManager;
 import com.matej.cshelper.network.OnFinishedCallback;
@@ -49,15 +50,21 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
                 drawerLayout.closeDrawer(GravityCompat.START);
+                Bundle args = new Bundle();
                 switch (id) {
                     case R.id.nav_home:
                         Navigation.findNavController(findViewById(R.id.fragmentContainerView)).navigate(R.id.homeFragment,new Bundle());
                         break;
                     case R.id.nav_orders:
-                        Navigation.findNavController(findViewById(R.id.fragmentContainerView)).navigate(R.id.ordersFragment);
+                        args.putSerializable(OrdersFragment.ARG_STATE,OrdersFragment.State.BUILD);
+                        Navigation.findNavController(findViewById(R.id.fragmentContainerView)).navigate(R.id.ordersFragment,args);
                         break;
                     case R.id.nav_settings:
                         Navigation.findNavController(findViewById(R.id.fragmentContainerView)).navigate(R.id.settingsFragment);
+                        break;
+                    case R.id.nav_prepearation:
+                        args.putSerializable(OrdersFragment.ARG_STATE,OrdersFragment.State.PREPARATION);
+                        Navigation.findNavController(findViewById(R.id.fragmentContainerView)).navigate(R.id.ordersFragment,args);
                         break;
                 }
                 return true;
