@@ -24,7 +24,7 @@ public class HomeFragment extends Fragment {
         ViewGroup mainLayout = root.findViewById(R.id.home_main_layout);
 
         OrderListController controller = (OrderListController) InstanceProvider.GetInstance(OrderListController.class);
-        
+
         for(Order order : controller.ActiveOrders)
         {
 

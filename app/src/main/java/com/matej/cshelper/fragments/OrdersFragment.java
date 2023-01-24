@@ -67,15 +67,15 @@ public class OrdersFragment extends Fragment {
         this.controller = (OrderListController) InstanceProvider.GetInstance(OrderListController.class);
         for(Order order : this.controller.ActiveOrders)
         {
-            OrderProcess preocessedOrder = ((OrderProcessingManager)InstanceProvider.GetInstance(OrderProcessingManager.class)).GetOrder(order.TicketID);
+            OrderProcess processedOrder = ((OrderProcessingManager)InstanceProvider.GetInstance(OrderProcessingManager.class)).GetOrder(order.TicketID);
             boolean ignore = false;
             switch (this.state){
                 case BUILD:
-                    if(preocessedOrder.Status != OrderProcess.OrderStatus.COMPONENT_PREPARATION_DONE && preocessedOrder.Status != OrderProcess.OrderStatus.BUILD_START)
+                    if(processedOrder.Status != OrderProcess.OrderStatus.COMPONENT_PREPARATION_DONE && processedOrder.Status != OrderProcess.OrderStatus.BUILD_START)
                         ignore = true;
                     break;
                 case PREPARATION:
-                    if(preocessedOrder.Status != OrderProcess.OrderStatus.NEW && preocessedOrder.Status != OrderProcess.OrderStatus.COMPONENT_PREPARATION_START)
+                    if(processedOrder.Status != OrderProcess.OrderStatus.NEW && processedOrder.Status != OrderProcess.OrderStatus.COMPONENT_PREPARATION_START)
                         ignore = true;
                 default:
                     break;
@@ -101,8 +101,8 @@ public class OrdersFragment extends Fragment {
             });
 
             TextView orderStatus = item.findViewById(R.id.order_status);
-            orderStatus.setText(preocessedOrder.Status.toString());
-            switch(preocessedOrder.Status){
+            orderStatus.setText(processedOrder.Status.toString());
+            switch(processedOrder.Status){
                 case BUILD_DONE:
                     orderStatus.setTextColor(getResources().getColor(R.color.green));
                     break;
