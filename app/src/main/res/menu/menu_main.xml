@@ -10,7 +10,7 @@
             android:icon="@drawable/ic_baseline_assignment_24"
             />
         <item android:id="@+id/nav_orders"
-            android:title="Orders"
+            android:title="Server build"
             android:icon="@drawable/ic_baseline_build_24" />
         <item android:id="@+id/nav_settings"
             android:title="Settings"

@@ -1,16 +1,23 @@
 package com.matej.cshelper.fragments;
 
+import static com.matej.cshelper.fragments.OrdersFragment.State.BUILD;
+
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.view.ContextThemeWrapper;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,9 +40,12 @@ public class OrdersFragment extends Fragment {
         CHECK,
         EXPEDITION
     }
+    public static final String TAG = "OrdersFragment";
     public static final String ARG_STATE = "state";
     private State state;
-    private OrderListController controller;
+    private boolean searchActive = false;
+    private EditText searchInput;
+    LinearLayout ordersLayout;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -63,57 +73,86 @@ public class OrdersFragment extends Fragment {
         }
 
         View root = inflater.inflate(R.layout.fragment_orders, container, false);
-        LinearLayout mainLayout = root.findViewById(R.id.orders_list_layout);
-        this.controller = (OrderListController) InstanceProvider.GetInstance(OrderListController.class);
-        for(Order order : this.controller.ActiveOrders)
-        {
-            OrderProcess processedOrder = ((OrderProcessingManager)InstanceProvider.GetInstance(OrderProcessingManager.class)).GetOrder(order.TicketID);
-            boolean ignore = false;
-            switch (this.state){
-                case BUILD:
-                    if(processedOrder.Status != OrderProcess.OrderStatus.COMPONENT_PREPARATION_DONE && processedOrder.Status != OrderProcess.OrderStatus.BUILD_START)
-                        ignore = true;
-                    break;
-                case PREPARATION:
-                    if(processedOrder.Status != OrderProcess.OrderStatus.NEW && processedOrder.Status != OrderProcess.OrderStatus.COMPONENT_PREPARATION_START)
-                        ignore = true;
-                default:
-                    break;
+        LinearLayout mainLayout = root.findViewById(R.id.orders_main_layout);
+        searchInput = mainLayout.findViewById(R.id.text_input_edit_text);
+        searchInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
             }
 
-            if(ignore)
-                continue;
-            View item = inflater.inflate(R.layout.order_list_item,(ViewGroup) root,false);
-            TextView ticketID = item.findViewById(R.id.order_ticket_id);
-            ticketID.setText(order.TicketID);
-            TextView orderID = item.findViewById(R.id.order_order_id);
-            orderID.setText(order.OrderID);
-            TextView company = item.findViewById(R.id.order_company);
-            company.setText(order.Company);
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-            item.setOnClickListener(new View.OnClickListener() {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                searchActive = searchInput.getText().length() > 0;
+                refreshOrdersLayout();
+            }
+        });
+        ordersLayout = mainLayout.findViewById(R.id.orders_list_layout);
+        OrderListController controller = OrderListController.Instance();
+        for(Order order : controller.ActiveOrders)
+        {
+            OrderProcessingManager.getInstance().GetOrder(order.TicketID, new OrderProcessingManager.GetOrderCallback() {
                 @Override
-                public void onClick(View view) {
-                    Bundle data = new Bundle();
-                    data.putString(OrderProcessingFragment.ARG_TICKET_ID,order.TicketID);
-                    openOrder(data);
+                public void onGetOrderSuccess(OrderProcess processedOrder) {
+                    boolean ignore = false;
+                    switch (state){
+                        case BUILD:
+                            if(processedOrder.Status != OrderProcess.OrderStatus.COMPONENT_PREPARATION_DONE && processedOrder.Status != OrderProcess.OrderStatus.BUILD_START)
+                                ignore = true;
+                            break;
+                        case PREPARATION:
+                            if(processedOrder.Status != OrderProcess.OrderStatus.NEW && processedOrder.Status != OrderProcess.OrderStatus.COMPONENT_PREPARATION_START)
+                                ignore = true;
+                        default:
+                            break;
+                    }
+
+                    if(ignore)
+                        return;
+                    View item = inflater.inflate(R.layout.order_list_item,(ViewGroup) root,false);
+                    TextView ticketID = item.findViewById(R.id.order_ticket_id);
+                    ticketID.setText(order.TicketID);
+                    TextView orderID = item.findViewById(R.id.order_order_id);
+                    orderID.setText(order.OrderID);
+                    TextView company = item.findViewById(R.id.order_company);
+                    company.setText(order.Company);
+
+                    item.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Bundle data = new Bundle();
+                            data.putString(OrderProcessingFragment.ARG_TICKET_ID,order.TicketID);
+                            openOrder(data);
+                        }
+                    });
+
+                    TextView orderStatus = item.findViewById(R.id.order_status);
+                    orderStatus.setText(processedOrder.Status.toString());
+                    switch(processedOrder.Status.toString()){
+                        case "Done":
+                            orderStatus.setTextColor(getResources().getColor(R.color.green));
+                            break;
+                        case "Started":
+                            orderStatus.setTextColor(getResources().getColor(R.color.orange));
+                        default:
+                            break;
+                    }
+                    ordersLayout.addView(item);
+                }
+
+                @Override
+                public void onGetOrderFail(String message) {
+                    Log.e(OrdersFragment.TAG, "Order get fail" + message);
                 }
             });
 
-            TextView orderStatus = item.findViewById(R.id.order_status);
-            orderStatus.setText(processedOrder.Status.toString());
-            switch(processedOrder.Status){
-                case BUILD_DONE:
-                    orderStatus.setTextColor(getResources().getColor(R.color.green));
-                    break;
-                case BUILD_START:
-                    orderStatus.setTextColor(getResources().getColor(R.color.orange));
-                default:
-                    break;
-            }
-            mainLayout.addView(item);
         }
-        if(this.controller.ActiveOrders.size() == 0)
+        if(controller.ActiveOrders.size() == 0)
         {
             AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(getActivity(), R.style.myDialog));
             // Add the buttons
@@ -141,5 +180,30 @@ public class OrdersFragment extends Fragment {
                 break;
         }
 
+    }
+
+    private void refreshOrdersLayout()
+    {
+        for(int i=0; i < ordersLayout.getChildCount(); i++)
+        {
+            View view = ordersLayout.getChildAt(i);
+            TextView ticketID = view.findViewById(R.id.order_ticket_id);
+            TextView orderID = view.findViewById(R.id.order_order_id);
+            TextView company = view.findViewById(R.id.order_company);
+            if(searchActive)
+            {
+                String searchString = searchInput.getText().toString().toLowerCase();
+                if(ticketID.getText().toString().toLowerCase().contains(searchString) ||
+                        orderID.getText().toString().toLowerCase().contains(searchString) ||
+                        company.getText().toString().toLowerCase().contains(searchString))
+                {
+                    view.setVisibility(View.VISIBLE);
+                }
+                else
+                    view.setVisibility(View.GONE);
+            }
+            else
+                view.setVisibility(View.VISIBLE);
+        }
     }
 }

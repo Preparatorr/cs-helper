@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
     @Override
     protected void onPause() {
         super.onPause();
-        ((OrderProcessingManager)InstanceProvider.GetInstance(OrderProcessingManager.class)).saveOrders();
+        OrderProcessingManager.getInstance().saveOrders();
     }
 
     @Override
@@ -98,8 +98,7 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
 
     @Override
     public void OnFinished() {
-        InstanceProvider.RegisterInstance(new OrderListController(RedmineConnector.getInstance().GetLatestOrders()));
-        InstanceProvider.RegisterInstance(new OrderProcessingManager());
+        OrderListController.Instance().setActiveOrders(RedmineConnector.getInstance().GetLatestOrders());
         //((OrderListController)InstanceProvider.GetInstance(OrderListController.class));
     }
 }

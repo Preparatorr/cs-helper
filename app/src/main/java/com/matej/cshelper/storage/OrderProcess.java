@@ -16,16 +16,27 @@ public class OrderProcess {
 
     public enum OrderStatus
     {
-        NEW,
-        COMPONENT_PREPARATION_START,
-        COMPONENT_PREPARATION_DONE,
-        BUILD_START,
-        BUILD_DONE,
-        BUILD_CHECK_START,
-        BUILD_CHECK_DONE,
-        EXPORT_START,
-        EXPORT_DONE,
-        ORDER_DONE
+        NEW("New"),
+        COMPONENT_PREPARATION_START("Started"),
+        COMPONENT_PREPARATION_DONE("Done"),
+        BUILD_START("Started"),
+        BUILD_DONE("Done"),
+        BUILD_CHECK_START("Started"),
+        BUILD_CHECK_DONE("Done"),
+        EXPORT_START("Started"),
+        EXPORT_DONE("Done"),
+        ORDER_DONE("Done");
+
+        private String string;
+        OrderStatus(String name)
+        {
+            string = name;
+        }
+
+        @Override
+        public String toString() {
+            return string;
+        }
     }
 
     private static String TAG = "OrderProcess";
@@ -38,6 +49,7 @@ public class OrderProcess {
     public ArrayList<ProcessStep> OrderSteps;
     public ArrayList<ComponentProcess> Components;
     public OrderStatus Status;
+    public HashMap<OrderStatus,String> stepNotes;
 
     public OrderProcess(Order order)
     {
@@ -46,6 +58,7 @@ public class OrderProcess {
         Company = order.Company;
         Stresstest = order.Stresstest;
         Status = OrderStatus.NEW;
+        stepNotes = new HashMap<>();
 
         Components = new ArrayList<>();
         for (ServerComponent component: order.Components)

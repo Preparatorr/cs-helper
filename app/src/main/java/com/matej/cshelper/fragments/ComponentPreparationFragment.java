@@ -27,7 +27,7 @@ import com.matej.cshelper.storage.OrderProcess;
 import com.matej.cshelper.storage.ProcessStep;
 
 
-public class ComponentPreparationFragment extends Fragment {
+public class ComponentPreparationFragment extends Fragment implements OrderProcessingManager.GetOrderCallback {
 
     private static String TAG = "ComponentPreparationFragment";
 
@@ -35,16 +35,19 @@ public class ComponentPreparationFragment extends Fragment {
     private LinearLayout stepsLayout;
 
     private String ticketID;
-    private OrderProcess order;
+    private OrderProcess order = null;
     private ComponentPreparationFragment instance;
+
+    private ViewGroup mainLayout;
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             this.ticketID = getArguments().getString(OrderProcessingFragment.ARG_TICKET_ID);
-            this.order = ((OrderProcessingManager) InstanceProvider.GetInstance(OrderProcessingManager.class)).GetOrder(this.ticketID);
-            this.order.Status = OrderProcess.OrderStatus.COMPONENT_PREPARATION_START;
+            OrderProcessingManager.getInstance().GetOrder(this.ticketID,this);
         }
         else
             Log.e(TAG, "Fatal: no ticket ID provided");
@@ -55,7 +58,8 @@ public class ComponentPreparationFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        redrawLayout();
+        if(this.order != null)
+            redrawLayout();
     }
 
     @Nullable
@@ -64,19 +68,12 @@ public class ComponentPreparationFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_order_processing, container, false);
-
-        ((MainActivity) getActivity()).setActionBarTitle("Ticket: " + order.TicketID);
-        Log.d(TAG, "Order: "+order);
-        ViewGroup mainLayout = root.findViewById(R.id.order_process_main_layout);
-        ((TextView)mainLayout.findViewById(R.id.order_process_ticket)).setText(order.TicketID);
-        ((TextView)mainLayout.findViewById(R.id.order_process_order)).setText(order.OrderID);
-        ((TextView)mainLayout.findViewById(R.id.order_process_company)).setText(order.Company);
-        LinearLayout stepsLayout = mainLayout.findViewById(R.id.order_steps_layout);
+        this.mainLayout = root.findViewById(R.id.order_process_main_layout);
+        ((TextView)this.mainLayout.findViewById(R.id.order_process_ticket)).setText(this.ticketID);
+        LinearLayout stepsLayout = this.mainLayout.findViewById(R.id.order_steps_layout);
 
         this.inflater = inflater;
         this.stepsLayout = stepsLayout;
-
-        redrawLayout();
         return root;
     }
 
@@ -119,6 +116,22 @@ public class ComponentPreparationFragment extends Fragment {
                 order.Status = OrderProcess.OrderStatus.COMPONENT_PREPARATION_DONE;
             }
         });
+        OrderProcessingManager.getInstance().saveFirebaseOrder(order);
         stepsLayout.addView(nextStep);
+    }
+
+    @Override
+    public void onGetOrderSuccess(OrderProcess order) {
+        this.order = order;
+        this.order.Status = OrderProcess.OrderStatus.COMPONENT_PREPARATION_START;
+        ((TextView)mainLayout.findViewById(R.id.order_process_order)).setText(order.OrderID);
+        ((TextView)mainLayout.findViewById(R.id.order_process_company)).setText(order.Company);
+        ((MainActivity) getActivity()).setActionBarTitle("Ticket: " + order.TicketID);
+        redrawLayout();
+    }
+
+    @Override
+    public void onGetOrderFail(String message) {
+        Log.e(TAG, "Order get fail" + message);
     }
 }
