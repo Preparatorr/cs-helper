@@ -26,16 +26,16 @@ import com.matej.cshelper.storage.OrderProcess;
 import com.matej.cshelper.storage.ProcessStep;
 
 
-public class ComponentPreparationFragment extends Fragment implements OrderProcessingManager.GetOrderCallback {
+public class ExpeditionFragment extends Fragment implements OrderProcessingManager.GetOrderCallback {
 
-    private static String TAG = "ComponentPreparationFragment";
+    private static String TAG = "ExpeditionFragment";
 
     private LayoutInflater inflater;
     private LinearLayout stepsLayout;
 
     private String ticketID;
     private OrderProcess order = null;
-    private ComponentPreparationFragment instance;
+    private ExpeditionFragment instance;
 
     private ViewGroup mainLayout;
 
@@ -83,12 +83,12 @@ public class ComponentPreparationFragment extends Fragment implements OrderProce
         stepsLayout.addView(stepView);
 
         CheckBox stepCheckbox = stepView.findViewById(R.id.step_done);
-        stepCheckbox.setChecked(component.PrepDone);
+        stepCheckbox.setChecked(component.ExpDone);
         stepCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-                    component.PrepDone = isChecked;
+                    component.ExpDone = isChecked;
                     OrderProcessingManager.getInstance().saveFirebaseOrder(order);
                 }
             }
@@ -104,16 +104,16 @@ public class ComponentPreparationFragment extends Fragment implements OrderProce
 
     private void redrawLayout()
     {
-        //Log.d(TAG,"RedraWLayout");
         stepsLayout.removeAllViewsInLayout();
         ComponentProcess server = new ComponentProcess();
         server.Name = order.Server;
-        server.Quantity = 1;
+        server.Quantity = order.ServerQty;
         showComponent(server);
 
         for(ComponentProcess component: order.Components)
         {
-            showComponent(component);
+            if(component.External)
+                showComponent(component);
         }
         EditText notes = new EditText(MainActivity.getContext());
         notes.setHint("Add notes");

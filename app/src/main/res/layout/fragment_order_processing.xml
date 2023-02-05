@@ -42,6 +42,14 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/order_process_order" />
 
+        <TextView
+            android:id="@+id/note_from_prep"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/order_process_order" />
+
         <View
             android:id="@+id/view"
             android:layout_width="match_parent"
@@ -49,7 +57,7 @@
             android:background="@android:color/darker_gray"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/order_process_order" />
+            app:layout_constraintTop_toBottomOf="@+id/note_from_prep" />
 
         <LinearLayout
             android:id="@+id/order_steps_layout"

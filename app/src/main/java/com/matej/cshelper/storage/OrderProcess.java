@@ -46,6 +46,7 @@ public class OrderProcess {
     public String Company;
     public String Stresstest;
     public String Server;
+    public int ServerQty;
     public String Note;
     public ArrayList<ProcessStep> OrderSteps;
     public ArrayList<ComponentProcess> Components;
@@ -58,6 +59,7 @@ public class OrderProcess {
         Company = order.Company;
         Stresstest = order.Stresstest;
         Status = OrderStatus.NEW;
+        ServerQty = 0;
         Note = "";
 
         Components = new ArrayList<>();
@@ -73,7 +75,11 @@ public class OrderProcess {
             if(list == null)
             {
                 if(c.Type.equals("SBRB"))
+                {
                     Server = c.Name;
+                    ServerQty = c.Quantity;
+                }
+
                 continue;
             }
             for (String step:list)

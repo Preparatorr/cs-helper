@@ -29,4 +29,9 @@
         android:name="com.matej.cshelper.fragments.ComponentPreparationFragment"
         android:label="fragment_component_preparation"
         tools:layout="@layout/fragment_component_preparation" />
+    <fragment
+        android:id="@+id/expeditionFragment"
+        android:name="com.matej.cshelper.fragments.ExpeditionFragment"
+        android:label="fragment_expedition"
+        tools:layout="@layout/fragment_expedition" />
 </navigation>

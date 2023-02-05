@@ -3,6 +3,7 @@ package com.matej.cshelper;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.Navigation;
@@ -10,11 +11,11 @@ import androidx.navigation.Navigation;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toolbar;
 
 import com.google.android.material.navigation.NavigationView;
 import com.matej.cshelper.core.InstanceProvider;
@@ -29,7 +30,6 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
 
     DrawerLayout drawerLayout;
     NavigationView navigationView;
-    Toolbar toolbar;
     ActionBarDrawerToggle actionBarDrawerToggle;
 
     private static Context context;
@@ -44,7 +44,9 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.menu_open, R.string.menu_close);
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -66,6 +68,10 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
                         args.putSerializable(OrdersFragment.ARG_STATE,OrdersFragment.State.PREPARATION);
                         Navigation.findNavController(findViewById(R.id.fragmentContainerView)).navigate(R.id.ordersFragment,args);
                         break;
+                    case R.id.nav_expedition:
+                        args.putSerializable(OrdersFragment.ARG_STATE,OrdersFragment.State.EXPEDITION);
+                        Navigation.findNavController(findViewById(R.id.fragmentContainerView)).navigate(R.id.ordersFragment,args);
+                        break;
                 }
                 return true;
             }
@@ -83,11 +89,26 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
+        switch (item.getItemId())
+        {
+            case R.id.redmine_refresh:
+                OrderListController.Instance().setActiveOrders(RedmineConnector.getInstance().GetLatestOrders());
+                return true;
+        }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.drawer_menu,menu);
+
+        return true;
+    }
+
     public void setActionBarTitle(String title){
         setTitle(title);
     }
@@ -98,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
 
     @Override
     public void OnFinished() {
+
         OrderListController.Instance().setActiveOrders(RedmineConnector.getInstance().GetLatestOrders());
         //((OrderListController)InstanceProvider.GetInstance(OrderListController.class));
     }

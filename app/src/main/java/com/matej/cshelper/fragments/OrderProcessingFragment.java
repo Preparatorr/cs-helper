@@ -8,7 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -93,35 +95,73 @@ public class OrderProcessingFragment extends Fragment implements OrderProcessing
                 redrawLayout();
             }
         });
-        if(step.type == 2)
+        switch(step.type)
         {
-            TextView items = stepView.findViewById(R.id.items);
-            items.setVisibility(View.VISIBLE);
-            StringBuilder sb = new StringBuilder();
+            case 1:
+                Button buildButton = stepView.findViewById(R.id.build_button);
+                buildButton.setVisibility(View.VISIBLE);
+                buildButton.setText("Start");
+                buildButton.setOnClickListener(v -> {
+                    Bundle args = new Bundle();
+                    args.putString(ComponentTestFragment.AGR_TICKET_ID, ticketID);
+                    NavHostFragment.findNavController(this).navigate(R.id.componentTestFragment, args);
+                });
+                break;
+            case 2:
+                TextView items = stepView.findViewById(R.id.items);
+                items.setVisibility(View.VISIBLE);
+                StringBuilder sb = new StringBuilder();
 
-            if(order.Server != null)
-                sb.append(order.Server + "\n");
-            for(ComponentProcess component : order.Components)
-            {
-                sb.append(" - " + component.Quantity + "x" + component.Name + "\n");
-            }
-            items.setText(sb.toString());
-            items.setTextSize(getResources().getDimension(R.dimen.text_size_small));
-            if(items.getParent() != null)
-                ((ViewGroup)items.getParent()).removeView(items);
-            ((LinearLayout)stepView.findViewById(R.id.step_items)).addView(items);
-        }
-        if(step.type == 1)
-        {
-            Button buildButton = stepView.findViewById(R.id.build_button);
-            buildButton.setVisibility(View.VISIBLE);
-            buildButton.setText("Start");
-            buildButton.setOnClickListener(v -> {
-                Bundle args = new Bundle();
-                args.putString(ComponentTestFragment.AGR_TICKET_ID, ticketID);
-                NavHostFragment.findNavController(this).navigate(R.id.componentTestFragment, args);
-            });
-            //buildButton.setCol(getResources().getColor(R.color.white));
+                if(order.Server != null)
+                    sb.append(order.Server + "\n");
+                for(ComponentProcess component : order.Components)
+                {
+                    sb.append(" - " + component.Quantity + "x" + component.Name + "\n");
+                }
+                items.setText(sb.toString());
+                items.setTextSize(getResources().getDimension(R.dimen.text_size_small));
+                if(items.getParent() != null)
+                    ((ViewGroup)items.getParent()).removeView(items);
+                ((LinearLayout)stepView.findViewById(R.id.step_items)).addView(items);
+                break;
+            case 3:
+
+                TextView textView = stepView.findViewById(R.id.items);
+                textView.setVisibility(View.VISIBLE);
+                textView.setText("Mark external components");
+                LinearLayout componentLayout = stepView.findViewById(R.id.layout_item);
+
+                for(ComponentProcess component : order.Components)
+                {
+                    CheckBox checkBox = new CheckBox(MainActivity.getContext());
+                    checkBox.setText(component.Name);
+                    checkBox.setChecked(component.External);
+                    checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                            component.External = b;
+                            OrderProcessingManager.getInstance().saveFirebaseOrder(order);
+                        }
+                    });
+                    componentLayout.addView(checkBox);
+                }
+
+                ImageView arrow = stepView.findViewById(R.id.collapse_button);
+                arrow.setVisibility(View.VISIBLE);
+                arrow.setOnClickListener(new View.OnClickListener() {
+                    private boolean expanded = false;
+                    @Override
+                    public void onClick(View view) {
+                        expanded = !expanded;
+                        componentLayout.setVisibility(expanded? View.VISIBLE : View.GONE);
+                        if(expanded)
+                            ((ImageView)view).setImageResource(R.drawable.ic_baseline_expand_less_24);
+                        else
+                            ((ImageView)view).setImageResource(R.drawable.ic_baseline_expand_more_24);
+                    }
+                });
+
+                break;
         }
     }
 
@@ -152,9 +192,10 @@ public class OrderProcessingFragment extends Fragment implements OrderProcessing
                                 order.Note += "\nMontáž poznámka: " + notes.getText().toString();
                             RedmineConnector.getInstance().UpdateIssue(order);
                             Snackbar.make(view, "Sending update to Redmine", Snackbar.LENGTH_LONG).show();
+                            OrderProcessingManager.getInstance().saveFirebaseOrder(order);
                             Bundle args = new Bundle();
                             args.putSerializable(OrdersFragment.ARG_STATE, OrdersFragment.State.BUILD);
-                            NavHostFragment.findNavController(instance).navigate(R.id.ordersFragment);
+                            NavHostFragment.findNavController(instance).navigate(R.id.ordersFragment,args);
                         }
                     });
                     stepsLayout.addView(nextStep);
@@ -189,13 +230,14 @@ public class OrderProcessingFragment extends Fragment implements OrderProcessing
     public void onGetOrderSuccess(OrderProcess order) {
         this.order = order;
         this.order.Status = OrderProcess.OrderStatus.BUILD_START;
-        Log.d(TAG, "Order: "+order);
+        //Log.d(TAG, "Order: "+order);
         ((TextView)mainLayout.findViewById(R.id.order_process_ticket)).setText(order.TicketID);
         ((TextView)mainLayout.findViewById(R.id.order_process_order)).setText(order.OrderID);
         ((TextView)mainLayout.findViewById(R.id.order_process_company)).setText(order.Company);
-        TextView note = new TextView(MainActivity.getContext());
-        note.setText(order.Note);
-        mainLayout.addView(note);
+        if(order.Note != null && !order.Note.isEmpty())
+            ((TextView)mainLayout.findViewById(R.id.note_from_prep)).setText(order.Note);
+        else
+            ((TextView)mainLayout.findViewById(R.id.note_from_prep)).setVisibility(View.GONE);
         redrawLayout();
     }
 

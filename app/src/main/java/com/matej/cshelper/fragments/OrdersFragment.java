@@ -74,6 +74,9 @@ public class OrdersFragment extends Fragment {
             case BUILD:
                 ((MainActivity) getActivity()).setActionBarTitle("Orders for build");
                 break;
+            case EXPEDITION:
+                ((MainActivity) getActivity()).setActionBarTitle("Orders for expedition");
+                break;
             default:
                 ((MainActivity) getActivity()).setActionBarTitle("Redmine orders");
         }
@@ -114,6 +117,11 @@ public class OrdersFragment extends Fragment {
                         case PREPARATION:
                             if(processedOrder.Status != OrderProcess.OrderStatus.NEW && processedOrder.Status != OrderProcess.OrderStatus.COMPONENT_PREPARATION_START)
                                 ignore = true;
+                            break;
+                        case EXPEDITION:
+                            if(processedOrder.Status != OrderProcess.OrderStatus.BUILD_DONE && processedOrder.Status != OrderProcess.OrderStatus.EXPORT_START)
+                                ignore = true;
+                            break;
                         default:
                             break;
                     }
@@ -140,10 +148,12 @@ public class OrdersFragment extends Fragment {
                     TextView orderStatus = item.findViewById(R.id.order_status);
                     switch(processedOrder.Status)
                     {
+                        case BUILD_DONE:
                         case NEW:
                             orderStatus.setText("New");
                             //orderStatus.setTextColor(getResources().getColor(R.color.green));
                             break;
+                        case EXPORT_START:
                         case BUILD_START:
                         case COMPONENT_PREPARATION_START:
                             orderStatus.setText("Started");
@@ -194,6 +204,9 @@ public class OrdersFragment extends Fragment {
                 break;
             case BUILD:
                 NavHostFragment.findNavController(this).navigate(R.id.orderProcessingFragment, args);
+                break;
+            case EXPEDITION:
+                NavHostFragment.findNavController(this).navigate(R.id.expeditionFragment, args);
                 break;
         }
 

@@ -15,12 +15,21 @@
 
     <TextView
         android:id="@+id/component_name"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="TextView"
         android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/collapse_button"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_baseline_expand_more_24" />
 
     <LinearLayout
         android:id="@+id/step_items"
@@ -58,6 +67,14 @@
             android:layout_height="wrap_content"
             android:text="TextView"
             android:textSize="@dimen/text_size"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/layout_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:orientation="vertical"
             android:visibility="gone" />
 
     </LinearLayout>

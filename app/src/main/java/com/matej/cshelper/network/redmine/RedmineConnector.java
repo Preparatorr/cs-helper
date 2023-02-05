@@ -17,12 +17,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class RedmineConnector {
 
     private static String TAG = "RedmineConnector";
     private static RedmineConnector instance = null;
+
+    public LocalDateTime LastSync;
+
     public static RedmineConnector getInstance()
     {
         if(instance == null)
@@ -32,8 +37,6 @@ public class RedmineConnector {
 
     public ArrayList<Order> GetLatestOrders()
     {
-        //GetOrder("24131");
-        //return null;
         ArrayList<Order> result = new ArrayList<>();
         String url = SecretKeys.getInstance().RedmineURL + "issues.json?"+SecretKeys.getInstance().RedmineQuery;
         Log.d("URL ", url);
@@ -56,6 +59,7 @@ public class RedmineConnector {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        LastSync = LocalDateTime.now();
         return result;
     }
 
@@ -74,6 +78,9 @@ public class RedmineConnector {
 
     public boolean UpdateIssue(OrderProcess order)
     {
+        if(true)
+            return true;
+
         JSONObject jsonObject = new JSONObject();
         try {
             JSONObject notesObject = new JSONObject();
