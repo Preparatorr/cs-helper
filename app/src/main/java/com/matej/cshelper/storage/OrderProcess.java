@@ -17,14 +17,14 @@ public class OrderProcess {
     public enum OrderStatus
     {
         NEW("New"),
-        COMPONENT_PREPARATION_START("Started"),
-        COMPONENT_PREPARATION_DONE("Done"),
-        BUILD_START("Started"),
-        BUILD_DONE("Done"),
-        BUILD_CHECK_START("Started"),
-        BUILD_CHECK_DONE("Done"),
-        EXPORT_START("Started"),
-        EXPORT_DONE("Done"),
+        COMPONENT_PREPARATION_START("CPStarted"),
+        COMPONENT_PREPARATION_DONE("CPDone"),
+        BUILD_START("BStarted"),
+        BUILD_DONE("BDone"),
+        BUILD_CHECK_START("BCStarted"),
+        BUILD_CHECK_DONE("BCDone"),
+        EXPORT_START("EStarted"),
+        EXPORT_DONE("EDone"),
         ORDER_DONE("Done");
 
         private String string;
@@ -46,10 +46,10 @@ public class OrderProcess {
     public String Company;
     public String Stresstest;
     public String Server;
+    public String Note;
     public ArrayList<ProcessStep> OrderSteps;
     public ArrayList<ComponentProcess> Components;
     public OrderStatus Status;
-    public HashMap<OrderStatus,String> stepNotes;
 
     public OrderProcess(Order order)
     {
@@ -58,7 +58,7 @@ public class OrderProcess {
         Company = order.Company;
         Stresstest = order.Stresstest;
         Status = OrderStatus.NEW;
-        stepNotes = new HashMap<>();
+        Note = "";
 
         Components = new ArrayList<>();
         for (ServerComponent component: order.Components)

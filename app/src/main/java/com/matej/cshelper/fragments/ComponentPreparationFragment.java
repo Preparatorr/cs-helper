@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -107,6 +108,9 @@ public class ComponentPreparationFragment extends Fragment implements OrderProce
         {
             showOrder(component);
         }
+        EditText notes = new EditText(MainActivity.getContext());
+        notes.setHint("Add notes");
+        stepsLayout.addView(notes);
         Button nextStep = new Button(MainActivity.getContext());
         nextStep.setText("DONE");
         nextStep.setOnClickListener(new View.OnClickListener() {
@@ -114,9 +118,14 @@ public class ComponentPreparationFragment extends Fragment implements OrderProce
             public void onClick(View view) {
                 Log.d(TAG,"Order done!");
                 order.Status = OrderProcess.OrderStatus.COMPONENT_PREPARATION_DONE;
+                if(notes.getText().length()>0)
+                    order.Note += "\nPříprava poznámka: " + notes.getText().toString();
+                OrderProcessingManager.getInstance().saveFirebaseOrder(order);
+                Bundle args = new Bundle();
+                args.putSerializable(OrdersFragment.ARG_STATE, OrdersFragment.State.PREPARATION);
+                NavHostFragment.findNavController(instance).navigate(R.id.ordersFragment,args);
             }
         });
-        OrderProcessingManager.getInstance().saveFirebaseOrder(order);
         stepsLayout.addView(nextStep);
     }
 

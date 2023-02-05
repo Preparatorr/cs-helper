@@ -1,12 +1,14 @@
 package com.matej.cshelper.fragments;
 
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -135,6 +137,9 @@ public class OrderProcessingFragment extends Fragment implements OrderProcessing
                 showOrder(step);
                 if(i == order.OrderSteps.size()-1)
                 {
+                    EditText notes = new EditText(MainActivity.getContext());
+                    notes.setHint("Add notes");
+                    stepsLayout.addView(notes);
                     Button nextStep = new Button(MainActivity.getContext());
                     nextStep.setText("DONE");
                     nextStep.setOnClickListener(new View.OnClickListener() {
@@ -143,8 +148,12 @@ public class OrderProcessingFragment extends Fragment implements OrderProcessing
                             Log.d(TAG,"Order done!");
                             order.Status = OrderProcess.OrderStatus.BUILD_DONE;
                             Log.d("ORDER DONE: ", order.RedminePrint());
+                            if(notes.getText().length()>0)
+                                order.Note += "\nMontáž poznámka: " + notes.getText().toString();
                             RedmineConnector.getInstance().UpdateIssue(order);
                             Snackbar.make(view, "Sending update to Redmine", Snackbar.LENGTH_LONG).show();
+                            Bundle args = new Bundle();
+                            args.putSerializable(OrdersFragment.ARG_STATE, OrdersFragment.State.BUILD);
                             NavHostFragment.findNavController(instance).navigate(R.id.ordersFragment);
                         }
                     });
@@ -184,6 +193,9 @@ public class OrderProcessingFragment extends Fragment implements OrderProcessing
         ((TextView)mainLayout.findViewById(R.id.order_process_ticket)).setText(order.TicketID);
         ((TextView)mainLayout.findViewById(R.id.order_process_order)).setText(order.OrderID);
         ((TextView)mainLayout.findViewById(R.id.order_process_company)).setText(order.Company);
+        TextView note = new TextView(MainActivity.getContext());
+        note.setText(order.Note);
+        mainLayout.addView(note);
         redrawLayout();
     }
 

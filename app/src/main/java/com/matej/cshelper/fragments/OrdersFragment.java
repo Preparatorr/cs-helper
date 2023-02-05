@@ -31,6 +31,8 @@ import com.matej.cshelper.fragments.helpers.OrderProcessingManager;
 import com.matej.cshelper.network.redmine.entities.Order;
 import com.matej.cshelper.storage.OrderProcess;
 
+import kotlin.NotImplementedError;
+
 public class OrdersFragment extends Fragment {
 
     public enum State
@@ -53,6 +55,10 @@ public class OrdersFragment extends Fragment {
         if (getArguments() != null)
         {
             this.state = (State)getArguments().getSerializable(ARG_STATE);
+        }
+        else
+        {
+            throw new NotImplementedError();
         }
     }
 
@@ -132,14 +138,25 @@ public class OrdersFragment extends Fragment {
                     });
 
                     TextView orderStatus = item.findViewById(R.id.order_status);
-                    orderStatus.setText(processedOrder.Status.toString());
-                    switch(processedOrder.Status.toString()){
-                        case "Done":
-                            orderStatus.setTextColor(getResources().getColor(R.color.green));
+                    switch(processedOrder.Status)
+                    {
+                        case NEW:
+                            orderStatus.setText("New");
+                            //orderStatus.setTextColor(getResources().getColor(R.color.green));
                             break;
-                        case "Started":
+                        case BUILD_START:
+                        case COMPONENT_PREPARATION_START:
+                            orderStatus.setText("Started");
                             orderStatus.setTextColor(getResources().getColor(R.color.orange));
-                        default:
+                            break;
+                        case COMPONENT_PREPARATION_DONE:
+                            if(state == State.PREPARATION)
+                            {
+                                orderStatus.setText("Done");
+                                orderStatus.setTextColor(getResources().getColor(R.color.green));
+                            }
+                            else
+                                orderStatus.setText("New");
                             break;
                     }
                     ordersLayout.addView(item);

@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.matej.cshelper.R;
 import com.matej.cshelper.core.InstanceProvider;
@@ -25,6 +27,7 @@ public class HomeFragment extends Fragment implements OrderListController.Redmin
 
     private View preparationTile;
     private View buildTile;
+    private HomeFragment instance;
 
     int buildNew = 0;
     int buildStarted = 0;
@@ -37,12 +40,21 @@ public class HomeFragment extends Fragment implements OrderListController.Redmin
         View root = inflater.inflate(R.layout.fragment_home, container, false);
         ViewGroup mainLayout = root.findViewById(R.id.home_main_layout);
 
+        instance = this;
         preparationTile = inflater.inflate(R.layout.main_screen_tile, mainLayout, false);
         TextView title = preparationTile.findViewById(R.id.main_tile_title);
         title.setText("Preparation phase");
         TextView count = preparationTile.findViewById(R.id.main_tile_count);
         count.setText("5x NEW\n1x Started");
         mainLayout.addView(preparationTile);
+        preparationTile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bundle args = new Bundle();
+                args.putSerializable(OrdersFragment.ARG_STATE,OrdersFragment.State.PREPARATION);
+                NavHostFragment.findNavController(instance).navigate(R.id.ordersFragment,args);
+            }
+        });
 
         buildTile = inflater.inflate(R.layout.main_screen_tile, mainLayout, false);
         title = buildTile.findViewById(R.id.main_tile_title);
@@ -50,7 +62,14 @@ public class HomeFragment extends Fragment implements OrderListController.Redmin
         count = buildTile.findViewById(R.id.main_tile_count);
         count.setText("5x NEW\n1x Started");
         mainLayout.addView(buildTile);
-
+        buildTile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bundle args = new Bundle();
+                args.putSerializable(OrdersFragment.ARG_STATE,OrdersFragment.State.BUILD);
+                NavHostFragment.findNavController(instance).navigate(R.id.ordersFragment,args);
+            }
+        });
         OrderListController.Instance().setCallback(this);
         return root;
     }
