@@ -1,14 +1,21 @@
 package com.matej.cshelper;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.Navigation;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -16,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 import com.matej.cshelper.core.InstanceProvider;
@@ -72,12 +80,19 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
                         args.putSerializable(OrdersFragment.ARG_STATE,OrdersFragment.State.EXPEDITION);
                         Navigation.findNavController(findViewById(R.id.fragmentContainerView)).navigate(R.id.ordersFragment,args);
                         break;
+                    case R.id.nav_scanner:
+                        Navigation.findNavController(findViewById(R.id.fragmentContainerView)).navigate(R.id.scanFragment);
+                        break;
                 }
                 return true;
             }
         });
 
         FirebaseConnector.getInstance().getKeys(this);
+        if(!(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED))
+        {
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
 
     }
 
@@ -123,4 +138,18 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
         OrderListController.Instance().setActiveOrders(RedmineConnector.getInstance().GetLatestOrders());
         //((OrderListController)InstanceProvider.GetInstance(OrderListController.class));
     }
+
+    private ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // Permission is granted. Continue the action or workflow in your
+                    // app.
+                } else {
+                    // Explain to the user that the feature is unavailable because the
+                    // feature requires a permission that the user has denied. At the
+                    // same time, respect the user's decision. Don't link to system
+                    // settings in an effort to convince the user to change their
+                    // decision.
+                }
+            });
 }

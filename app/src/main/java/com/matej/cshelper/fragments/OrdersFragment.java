@@ -31,8 +31,6 @@ import com.matej.cshelper.fragments.helpers.OrderProcessingManager;
 import com.matej.cshelper.network.redmine.entities.Order;
 import com.matej.cshelper.storage.OrderProcess;
 
-import kotlin.NotImplementedError;
-
 public class OrdersFragment extends Fragment {
 
     public enum State
@@ -58,7 +56,7 @@ public class OrdersFragment extends Fragment {
         }
         else
         {
-            throw new NotImplementedError();
+            throw new IllegalArgumentException();
         }
     }
 

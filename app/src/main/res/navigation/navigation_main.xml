@@ -34,4 +34,9 @@
         android:name="com.matej.cshelper.fragments.ExpeditionFragment"
         android:label="fragment_expedition"
         tools:layout="@layout/fragment_expedition" />
+    <fragment
+        android:id="@+id/scanFragment"
+        android:name="com.matej.cshelper.scan.camera.ScanFragment"
+        android:label="fragment_scan"
+        tools:layout="@layout/fragment_scan" />
 </navigation>

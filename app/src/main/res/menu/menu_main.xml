@@ -15,6 +15,9 @@
         <item android:id="@+id/nav_expedition"
             android:title="Expedition"
             android:icon="@drawable/ic_baseline_local_shipping_24" />
+        <item android:id="@+id/nav_scanner"
+            android:title="Scanner"
+            android:icon="@drawable/ic_baseline_qr_code_scanner_24" />
         <item android:id="@+id/nav_settings"
             android:title="Settings"
             android:icon="@drawable/ic_baseline_settings_24" />
