@@ -23,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
@@ -33,6 +34,7 @@ import com.matej.cshelper.fragments.helpers.OrderProcessingManager;
 import com.matej.cshelper.network.OnFinishedCallback;
 import com.matej.cshelper.network.firebase.FirebaseConnector;
 import com.matej.cshelper.network.redmine.RedmineConnector;
+import com.matej.cshelper.settings.UserManager;
 
 public class MainActivity extends AppCompatActivity implements OnFinishedCallback {
 
@@ -41,12 +43,14 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
     ActionBarDrawerToggle actionBarDrawerToggle;
 
     private static Context context;
+    private static MainActivity instance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = getApplicationContext();
+        instance = this;
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.navigation_view);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.menu_open, R.string.menu_close);
@@ -93,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
         {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA);
         }
-
+        ((TextView)findViewById(R.id.user_text_view)).setText("User: " + UserManager.getInstance().getCurrentUser().Name);
     }
 
     @Override
@@ -131,6 +135,14 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
     public static Context getContext() {
         return context;
     }
+    public static MainActivity getInstance() {
+        return instance;
+    }
+
+    public void refreshUser()
+    {
+        ((TextView)findViewById(R.id.user_text_view)).setText("User: " + UserManager.getInstance().getCurrentUser().Name);
+    }
 
     @Override
     public void OnFinished() {
@@ -152,4 +164,5 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
                     // decision.
                 }
             });
+
 }

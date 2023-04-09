@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".scan.camera.ScanFragment">
+    tools:context=".fragments.ScanFragment">
 
     <androidx.camera.view.PreviewView
         android:id="@+id/scanner_preview"
@@ -25,5 +25,25 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/scanner_preview"
         tools:ignore="SpeakableTextPresentCheck" />
+
+    <TextView
+        android:id="@+id/barcode_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="Scan: "
+        android:textSize="@dimen/big_text_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scanner_preview" />
+
+    <Button
+        android:id="@+id/send_scan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="Scan Value"
+        app:layout_constraintEnd_toEndOf="@+id/torch_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/barcode_value" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
