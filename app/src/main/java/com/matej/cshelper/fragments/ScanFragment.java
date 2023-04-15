@@ -40,6 +40,7 @@ public class ScanFragment extends Fragment {
 
     private static final String TAG = "BARCODE_SCANER";
     public static final String ARG_SOURCE = "SOURCE";
+    public static final String ARG_SOURCE_PAYLOAD = "SOURCE_PAYLOAD";
 
     private int source = 0;
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
@@ -49,6 +50,8 @@ public class ScanFragment extends Fragment {
     private TextView barcodeValue;
     private Activity activity;
     private String lastScanValue = "";
+    private String payload = "";
+    private int scrollTo = 0;
     private ScanFragment instance;
 
     private boolean torchOn = false;
@@ -64,6 +67,13 @@ public class ScanFragment extends Fragment {
             public void onClick(View view) {
                 torchOn = !torchOn;
                 camera.getCameraControl().enableTorch(torchOn);
+            }
+        });
+        this.layout.findViewById(R.id.scan_back_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                lastScanValue = "";
+                returnScannedValue();
             }
         });
         layout.findViewById(R.id.send_scan).setOnClickListener(new View.OnClickListener() {
@@ -82,6 +92,10 @@ public class ScanFragment extends Fragment {
         if (getArguments() != null)
         {
             this.source = getArguments().getInt(ARG_SOURCE);
+            if(getArguments().containsKey(ARG_SOURCE_PAYLOAD))
+                this.payload = getArguments().getString(ARG_SOURCE_PAYLOAD);
+            if(getArguments().containsKey(OrderScanFragment.ARG_SCROLL_TO))
+                this.scrollTo = getArguments().getInt(OrderScanFragment.ARG_SCROLL_TO);
         }
         instance = this;
     }
@@ -156,10 +170,7 @@ public class ScanFragment extends Fragment {
                                 barcodeValue.setText("Scan: " + lastScanValue);
                             }
                         }
-                        else
-                        {
-                            barcodeValue.setText("Scan: ");
-                        }
+                        barcodeValue.setText("Scan: " + lastScanValue);
 
                     })
                     .addOnFailureListener(e -> Log.e(TAG, e.getMessage()))
@@ -172,19 +183,27 @@ public class ScanFragment extends Fragment {
 
     void returnScannedValue()
     {
-        if(source == 1) //SettingsFragment
+        switch (source)//SettingsFragment
         {
-            try
-            {
+            case 1:
+                try
+                {
+                    Bundle args = new Bundle();
+                    args.putInt(SettingsFragment.ARG_USERID, Integer.parseInt(lastScanValue));
+                    NavHostFragment.findNavController(instance).navigate(R.id.settingsFragment,args);
+                }
+                catch (Exception e)
+                {
+                    Log.w(TAG, e);
+                }
+                break;
+            case 2:
                 Bundle args = new Bundle();
-                args.putInt(SettingsFragment.ARG_USERID, Integer.parseInt(lastScanValue));
-                NavHostFragment.findNavController(instance).navigate(R.id.settingsFragment,args);
-            }
-            catch (Exception e)
-            {
-                Log.w(TAG, e);
-            }
-
+                args.putString(OrderScanFragment.ARG_SCAN, lastScanValue);
+                args.putString(ARG_SOURCE_PAYLOAD, payload);
+                args.putInt(OrderScanFragment.ARG_SCROLL_TO, scrollTo);
+                NavHostFragment.findNavController(instance).navigate(R.id.orderScanFragment,args);
+                break;
         }
     }
 }

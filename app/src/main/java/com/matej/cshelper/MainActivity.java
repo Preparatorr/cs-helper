@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 import com.matej.cshelper.core.InstanceProvider;
+import com.matej.cshelper.fragments.OrderScanFragment;
 import com.matej.cshelper.fragments.OrdersFragment;
 import com.matej.cshelper.fragments.helpers.OrderListController;
 import com.matej.cshelper.fragments.helpers.OrderProcessingManager;
@@ -86,6 +87,9 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
                         break;
                     case R.id.nav_scanner:
                         Navigation.findNavController(findViewById(R.id.fragmentContainerView)).navigate(R.id.scanFragment);
+                        break;
+                    case R.id.nav_order_scan:
+                        Navigation.findNavController(findViewById(R.id.fragmentContainerView)).navigate(R.id.orderScanFragment);
                         break;
                 }
                 return true;

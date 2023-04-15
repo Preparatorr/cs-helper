@@ -11,4 +11,8 @@
         android:id="@+id/test"
         android:title="Item"
         android:visible="false" />
+    <item
+        android:id="@+id/finish_scan"
+        android:title="Finish"
+        android:visible="false" />
 </menu>

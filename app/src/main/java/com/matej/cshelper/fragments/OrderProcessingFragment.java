@@ -160,7 +160,16 @@ public class OrderProcessingFragment extends Fragment implements OrderProcessing
                             ((ImageView)view).setImageResource(R.drawable.ic_baseline_expand_more_24);
                     }
                 });
-
+                break;
+            case 4:
+                Button scanButton = stepView.findViewById(R.id.build_button);
+                scanButton.setVisibility(View.VISIBLE);
+                scanButton.setText("Scan");
+                scanButton.setOnClickListener(v -> {
+                    Bundle args = new Bundle();
+                    args.putString(OrderScanFragment.ARG_TICKET_ID, ticketID);
+                    NavHostFragment.findNavController(this).navigate(R.id.orderScanFragment, args);
+                });
                 break;
         }
     }
