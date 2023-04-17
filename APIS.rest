@@ -1,0 +1,17 @@
+###
+PUT https://helpdesk.czech-server.cz/issues/33071.json HTTP/1.1
+Content-Type: application/json
+X-Redmine-API-Key: c4ebe53e074b9ff64de634908307cdb820f13d7d
+
+{
+    "issue":
+    {
+        "id":"33071",
+        "custom_fields":
+            {
+                "id":22,
+                "value":"\nServer: 409;\nCase: 4008400395029;\nMB: 4008400395029;"
+            }
+}
+}
+

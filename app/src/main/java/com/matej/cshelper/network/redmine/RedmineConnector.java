@@ -25,7 +25,6 @@ public class RedmineConnector {
 
     private static String TAG = "RedmineConnector";
     private static RedmineConnector instance = null;
-
     public LocalDateTime LastSync;
 
     public static RedmineConnector getInstance()
@@ -55,6 +54,7 @@ public class RedmineConnector {
                 Order order = ParseOrder(issues.getJSONObject(i));
                 if(order != null)
                     result.add(order);
+                //Log.d(TAG, "Issue: " + issues.getJSONObject(i));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -97,6 +97,34 @@ public class RedmineConnector {
         WebRequest request = new WebRequest(url, WebRequest.Method.Put,body);
         String response = request.Invoke();
         Log.d(TAG +"Response",response);
+        return true;
+    }
+
+    public boolean updateSerialNumbers(String issue, String value)
+    {
+        /*if(GetOrder(issue) == null)
+            return false;*/
+
+        JSONObject issueJson = new JSONObject();
+        JSONObject finalIssue = new JSONObject();
+        try {
+            JSONObject serials = new JSONObject();
+            serials.put("id", 22);
+            serials.put("value", value);
+            JSONArray customFields = new JSONArray();
+            customFields.put(0, serials);
+            issueJson.put("id", issue);
+            issueJson.put("custom_fields", customFields);
+            finalIssue.put("issue", issueJson);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+        Log.d(TAG, "Key: " + SecretKeys.getInstance().RedmineAPIKey +" "+ SecretKeys.getInstance().RedmineQuery);
+        String url = SecretKeys.getInstance().RedmineURL + "issues/" + issue + ".json";
+        String body = finalIssue.toString();
+        Log.d(TAG, "Body: " + body);
+        WebRequest request = new WebRequest(url, WebRequest.Method.Put,body);
+        String response = request.Invoke();
         return true;
     }
 

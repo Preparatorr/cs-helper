@@ -23,6 +23,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.matej.cshelper.MainActivity;
 import com.matej.cshelper.R;
 import com.matej.cshelper.fragments.helpers.OrderScanController;
+import com.matej.cshelper.network.redmine.RedmineConnector;
 import com.matej.cshelper.storage.Component;
 import com.matej.cshelper.storage.ScanComponent;
 
@@ -176,12 +177,17 @@ public class OrderScanFragment extends Fragment {
         root.findViewById(R.id.finish_scan_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (((EditText)root.findViewById(R.id.ticket_number_input)).getText().toString().isEmpty())
+                String issue = ((EditText)root.findViewById(R.id.ticket_number_input)).getText().toString();
+                if (issue.isEmpty())
                 {
                     Snackbar.make(view, "Ticket number is empty!!!", Snackbar.LENGTH_LONG).show();
                     return;
                 }
                 Log.d(TAG, "Scan: \n" + printScan());
+                RedmineConnector.getInstance().updateSerialNumbers(issue, printScan());
+                Snackbar.make(view, "Order Sent", Snackbar.LENGTH_LONG).show();
+                NavHostFragment.findNavController(instance).navigate(R.id.homeFragment);
+
             }
         });
         ((EditText)root.findViewById(R.id.ticket_number_input)).setText(OrderScanController.getInstance().ticketID);
