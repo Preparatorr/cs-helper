@@ -11,5 +11,7 @@ public class ComponentProcess
     public boolean External = false;
     public boolean ExpDone = false;
 
+    public boolean CoponentCheck = false;
+
     public HashMap<String,Boolean> steps;
 }

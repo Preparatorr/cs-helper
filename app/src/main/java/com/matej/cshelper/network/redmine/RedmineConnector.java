@@ -78,9 +78,6 @@ public class RedmineConnector {
 
     public boolean UpdateIssue(OrderProcess order)
     {
-        if(true)
-            return true;
-
         JSONObject jsonObject = new JSONObject();
         try {
             JSONObject notesObject = new JSONObject();
@@ -91,6 +88,26 @@ public class RedmineConnector {
             e.printStackTrace();
         }
         String url = SecretKeys.getInstance().RedmineURL + "issues/"+order.TicketID+".json";
+        Log.d(TAG,url);
+        String body = jsonObject.toString();
+        Log.d(TAG,body);
+        WebRequest request = new WebRequest(url, WebRequest.Method.Put,body);
+        String response = request.Invoke();
+        Log.d(TAG +"Response",response);
+        return true;
+    }
+
+    public boolean addNote(String note, String ticket)
+    {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            JSONObject notesObject = new JSONObject();
+            notesObject.put("notes", note);
+            jsonObject.put("issue", notesObject);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        String url = SecretKeys.getInstance().RedmineURL + "issues/"+ticket+".json";
         Log.d(TAG,url);
         String body = jsonObject.toString();
         Log.d(TAG,body);

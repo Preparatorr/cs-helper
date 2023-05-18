@@ -28,7 +28,7 @@ public class OrderListController{
 
     private OrderListController()
     {
-
+        ActiveOrders = new ArrayList<>();
     }
 
     public static OrderListController Instance()

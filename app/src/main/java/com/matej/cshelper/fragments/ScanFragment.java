@@ -1,9 +1,11 @@
 package com.matej.cshelper.fragments;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
@@ -131,16 +134,23 @@ public class ScanFragment extends Fragment {
                 .build();
 
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
+
         //Add MLKit
         BarcodeScannerOptions options =
                 new BarcodeScannerOptions.Builder()
                         .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
                         .build();
         BarcodeScanner scanner = BarcodeScanning.getClient(options);
-        ImageAnalysis analysis = new ImageAnalysis.Builder().build();
+        ImageAnalysis analysis = new ImageAnalysis.Builder()
+                //.setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                .setTargetResolution(new Size(4000,3000))
+                .build();
+
+
         analysis.setAnalyzer(
                 // newSingleThreadExecutor() will let us perform analysis on a single worker thread
                 Executors.newSingleThreadExecutor(),image -> {
+                    //Log.d("KOKO          ", "h: " + image.getHeight() + " w: " + image.getWidth());
                     processImage(scanner, image);
                 });
         Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview, analysis);

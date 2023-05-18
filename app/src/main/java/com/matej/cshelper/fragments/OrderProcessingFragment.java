@@ -108,21 +108,41 @@ public class OrderProcessingFragment extends Fragment implements OrderProcessing
                 });
                 break;
             case 2:
-                TextView items = stepView.findViewById(R.id.items);
-                items.setVisibility(View.VISIBLE);
-                StringBuilder sb = new StringBuilder();
+                TextView componentTestText = stepView.findViewById(R.id.items);
+                componentTestText.setVisibility(View.VISIBLE);
+                componentTestText.setText("Component test");
 
-                if(order.Server != null)
-                    sb.append(order.Server + "\n");
+                LinearLayout componentTestLayout = stepView.findViewById(R.id.layout_item);
+
                 for(ComponentProcess component : order.Components)
                 {
-                    sb.append(" - " + component.Quantity + "x" + component.Name + "\n");
+                    CheckBox checkBox = new CheckBox(MainActivity.getContext());
+                    checkBox.setText(component.Name);
+                    checkBox.setChecked(component.CoponentCheck);
+                    checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                            component.CoponentCheck = b;
+                            OrderProcessingManager.getInstance().saveFirebaseOrder(order);
+                        }
+                    });
+                    componentTestLayout.addView(checkBox);
                 }
-                items.setText(sb.toString());
-                items.setTextSize(getResources().getDimension(R.dimen.text_size_small));
-                if(items.getParent() != null)
-                    ((ViewGroup)items.getParent()).removeView(items);
-                ((LinearLayout)stepView.findViewById(R.id.step_items)).addView(items);
+
+                ImageView arrowTestComp = stepView.findViewById(R.id.collapse_button);
+                arrowTestComp.setVisibility(View.VISIBLE);
+                arrowTestComp.setOnClickListener(new View.OnClickListener() {
+                    private boolean expanded = false;
+                    @Override
+                    public void onClick(View view) {
+                        expanded = !expanded;
+                        componentTestLayout.setVisibility(expanded? View.VISIBLE : View.GONE);
+                        if(expanded)
+                            ((ImageView)view).setImageResource(R.drawable.ic_baseline_expand_less_24);
+                        else
+                            ((ImageView)view).setImageResource(R.drawable.ic_baseline_expand_more_24);
+                    }
+                });
                 break;
             case 3:
 
@@ -194,12 +214,21 @@ public class OrderProcessingFragment extends Fragment implements OrderProcessing
                     nextStep.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
+                            for(ProcessStep orderStep: order.OrderSteps)
+                            {
+                                if(orderStep.mandatory && orderStep.status != ProcessStep.Status.DONE)
+                                {
+                                    Snackbar.make(view, "Unfinished mandatory step " + orderStep.name, Snackbar.LENGTH_LONG).show();
+                                    return;
+                                }
+                            }
                             Log.d(TAG,"Order done!");
                             order.Status = OrderProcess.OrderStatus.BUILD_DONE;
                             Log.d("ORDER DONE: ", order.RedminePrint());
                             if(notes.getText().length()>0)
                                 order.Note += "\nMontáž poznámka: " + notes.getText().toString();
                             RedmineConnector.getInstance().UpdateIssue(order);
+
                             Snackbar.make(view, "Sending update to Redmine", Snackbar.LENGTH_LONG).show();
                             OrderProcessingManager.getInstance().saveFirebaseOrder(order);
                             Bundle args = new Bundle();
@@ -214,11 +243,11 @@ public class OrderProcessingFragment extends Fragment implements OrderProcessing
             {
                 showOrder(step);
                 Button nextStep = new Button(MainActivity.getContext());
-                nextStep.setText("Skip step");
+                nextStep.setText("Next step");
                 nextStep.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(step.mandatory)
+                        if(step.mandatory && step.status != ProcessStep.Status.DONE)
                         {
                             Snackbar.make(view, "This step is mandatory", Snackbar.LENGTH_SHORT).show();
                                     //.setAction("Action", null).show();

@@ -73,7 +73,7 @@ public class OrderScanFragment extends Fragment {
                     if(!value.isEmpty())
                     {
                         arrayList.get(arrayList.size()-1).pn = value;
-                        arrayList.add(new Component(""));
+                        arrayList.add(new Component("", null));
                     }
                 }
             }
@@ -85,6 +85,14 @@ public class OrderScanFragment extends Fragment {
                     if(component.pn.equals(payloadArr[1]))
                     {
                         component.serials.set((Integer.parseInt(payloadArr[2]) - 1), value);
+                        /*if(component.name.equals("RAM"))
+                        {
+                            Bundle args = new Bundle();
+                            args.putInt(ScanFragment.ARG_SOURCE, 2);
+                            args.putString(ScanFragment.ARG_SOURCE_PAYLOAD, component.name);
+                            //args.putInt(ARG_SCROLL_TO, root.findViewById(R.id.order_scan_scroll_view).getScrollY());
+                            NavHostFragment.findNavController(instance).navigate(R.id.scanFragment,args);
+                        }*/
                     }
                 }
             }
@@ -183,8 +191,9 @@ public class OrderScanFragment extends Fragment {
                     Snackbar.make(view, "Ticket number is empty!!!", Snackbar.LENGTH_LONG).show();
                     return;
                 }
-                Log.d(TAG, "Scan: \n" + printScan());
-                RedmineConnector.getInstance().updateSerialNumbers(issue, printScan());
+                String scan = printScan();
+                Log.d(TAG, "Scan: \n" + scan);
+                //RedmineConnector.getInstance().updateSerialNumbers(issue, scan);
                 Snackbar.make(view, "Order Sent", Snackbar.LENGTH_LONG).show();
                 NavHostFragment.findNavController(instance).navigate(R.id.homeFragment);
 

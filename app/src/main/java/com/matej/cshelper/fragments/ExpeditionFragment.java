@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.matej.cshelper.MainActivity;
 import com.matej.cshelper.R;
 import com.matej.cshelper.fragments.helpers.OrderProcessingManager;
+import com.matej.cshelper.network.redmine.RedmineConnector;
 import com.matej.cshelper.storage.ComponentProcess;
 import com.matej.cshelper.storage.OrderProcess;
 import com.matej.cshelper.storage.ProcessStep;
@@ -128,6 +129,25 @@ public class ExpeditionFragment extends Fragment implements OrderProcessingManag
                 if(notes.getText().length()>0)
                     order.Note += "\nPříprava poznámka: " + notes.getText().toString();
                 OrderProcessingManager.getInstance().saveFirebaseOrder(order);
+                StringBuilder preparationMessage = new StringBuilder("Připrava serveru HOTOVÁ");
+                for(ComponentProcess component: order.Components)
+                {
+                    if(component.External)
+                        preparationMessage.append("\n  DONE: ");
+                    else
+                        preparationMessage.append("\n  NOT DONE: ");
+
+                    preparationMessage.append(component.Quantity).append("x ")
+                            .append(component.Name);
+                }
+                if(notes.getText().length()>0)
+                {
+                    order.Note += "\nPříprava poznámka: " + notes.getText().toString();
+                    preparationMessage.append(order.Note);
+                }
+                //RedmineConnector.getInstance().addNote(preparationMessage.toString(), order.TicketID);
+                Log.d(TAG, preparationMessage.toString());
+
                 Bundle args = new Bundle();
                 args.putSerializable(OrdersFragment.ARG_STATE, OrdersFragment.State.PREPARATION);
                 NavHostFragment.findNavController(instance).navigate(R.id.ordersFragment,args);
