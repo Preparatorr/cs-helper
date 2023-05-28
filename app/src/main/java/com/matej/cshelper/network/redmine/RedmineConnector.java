@@ -1,11 +1,13 @@
 package com.matej.cshelper.network.redmine;
 
 import android.content.DialogInterface;
+import android.os.Bundle;
 import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.view.ContextThemeWrapper;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.matej.cshelper.MainActivity;
 import com.matej.cshelper.R;
 import com.matej.cshelper.config.SecretKeys;
@@ -142,6 +144,12 @@ public class RedmineConnector {
         Log.d(TAG, "Body: " + body);
         WebRequest request = new WebRequest(url, WebRequest.Method.Put,body);
         String response = request.Invoke();
+
+        Bundle bundle = new Bundle();
+        bundle.putString("TicketID", issue);
+        bundle.putString("SerialNumbers", body);
+        FirebaseAnalytics.getInstance(MainActivity.getContext()).logEvent("redmine_update_serial", bundle);
+
         return true;
     }
 

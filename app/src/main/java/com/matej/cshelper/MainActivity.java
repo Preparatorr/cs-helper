@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.matej.cshelper.core.InstanceProvider;
 import com.matej.cshelper.fragments.OrderScanFragment;
 import com.matej.cshelper.fragments.OrdersFragment;
@@ -102,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
             requestPermissionLauncher.launch(Manifest.permission.CAMERA);
         }
         ((TextView)findViewById(R.id.user_text_view)).setText("User: " + UserManager.getInstance().getCurrentUser().Name);
+        FirebaseAnalytics.getInstance(this);
     }
 
     @Override

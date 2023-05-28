@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.matej.cshelper.MainActivity;
 import com.matej.cshelper.R;
 import com.matej.cshelper.fragments.helpers.OrderScanController;
@@ -96,6 +97,11 @@ public class OrderScanFragment extends Fragment {
                     }
                 }
             }
+            Bundle bundle = new Bundle();
+            bundle.putString("ScannedValue", ticketId);
+            bundle.putString("SerialNumbers", printScan());
+            bundle.putString("HashMap", OrderScanController.getInstance().getComponents().toString());
+            FirebaseAnalytics.getInstance(MainActivity.getContext()).logEvent("scan_on_create", bundle);
         }
     }
 
@@ -193,7 +199,7 @@ public class OrderScanFragment extends Fragment {
                 }
                 String scan = printScan();
                 Log.d(TAG, "Scan: \n" + scan);
-                //RedmineConnector.getInstance().updateSerialNumbers(issue, scan);
+                RedmineConnector.getInstance().updateSerialNumbers(issue, scan);
                 Snackbar.make(view, "Order Sent", Snackbar.LENGTH_LONG).show();
                 NavHostFragment.findNavController(instance).navigate(R.id.homeFragment);
 
