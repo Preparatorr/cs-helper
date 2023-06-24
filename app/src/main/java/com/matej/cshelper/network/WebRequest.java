@@ -74,6 +74,17 @@ public class WebRequest {
                         .put(body)
                         .build();
             }
+            else if (method == Method.Post)
+            {
+                MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+                RequestBody body = RequestBody.create(JSON,this.body);
+                request = new Request.Builder()
+                        .url(url)
+                        .addHeader("Content-Type","application/json")
+                        .addHeader("X-Redmine-API-Key", SecretKeys.getInstance().RedmineAPIKey)
+                        .post(body)
+                        .build();
+            }
             else
             {
                 request = new Request.Builder()

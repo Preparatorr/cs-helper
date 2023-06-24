@@ -21,5 +21,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Switch user" />
+
+        <Switch
+            android:id="@+id/emails_sending"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Send email updates to customer" />
+
+        <Button
+            android:id="@+id/photo_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Button" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

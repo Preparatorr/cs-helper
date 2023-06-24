@@ -6,14 +6,24 @@
     android:layout_height="match_parent"
     tools:context=".fragments.ScanFragment">
 
+    <TextView
+        android:id="@+id/component_scan_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Component"
+        android:textSize="@dimen/big_text_size"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.camera.view.PreviewView
         android:id="@+id/scanner_preview"
         android:layout_width="match_parent"
-        android:layout_height="600dp"
+        android:layout_height="500dp"
         android:layout_margin="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/component_scan_name"
         app:scaleType="fillCenter" />
 
     <ImageButton
@@ -28,9 +38,10 @@
 
     <TextView
         android:id="@+id/barcode_value"
-        android:layout_width="wrap_content"
+        android:layout_width="290dp"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
+        android:singleLine="false"
         android:text="Scan: "
         android:textSize="@dimen/big_text_size"
         app:layout_constraintStart_toStartOf="parent"
@@ -42,9 +53,9 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:text="Scan Value"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/torch_button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/barcode_value" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageButton
         android:id="@+id/scan_back_button"

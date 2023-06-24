@@ -5,14 +5,18 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.matej.cshelper.config.SecretKeys;
+import com.matej.cshelper.fragments.SettingsFragment;
 import com.matej.cshelper.network.OnFinishedCallback;
 import com.matej.cshelper.network.firebase.entities.GlobalComponentsConfig;
+import com.matej.cshelper.network.redmine.RedmineConnector;
 import com.matej.cshelper.storage.ProcessStep;
 
 import org.json.JSONArray;
@@ -21,6 +25,7 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class FirebaseConnector {
 
@@ -70,9 +75,11 @@ public class FirebaseConnector {
                         SecretKeys.getInstance().RedmineAPIKey = document.getString("RedmineAPIKey");
                         SecretKeys.getInstance().RedmineURL = document.getString("RedmineURL");
                         SecretKeys.getInstance().RedmineQuery = document.getString("RedmineQuery");
+                        SettingsFragment.SendEmailsEnabled = document.getBoolean("emails_enabled");
+                        Gson gson = new Gson();
+                        RedmineConnector.getInstance().EmailMessages = gson.fromJson(document.getString("email_messages"), HashMap.class);
                         Log.d(TAG,SecretKeys.getInstance().RedmineURL);
                         callback.OnFinished();
-
                     } else {
                         Log.d(TAG, "No such document");
                     }
@@ -141,6 +148,22 @@ public class FirebaseConnector {
             }
         });
         OrderProcessSteps = result;
+    }
+
+    public void SetEmailNotifications(boolean status)
+    {
+        db.collection("configs").document("redmine_keys").update("emails_enabled", status).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d(TAG, "Email sending switch to: " + status);
+                }
+            })
+            .addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.w(TAG, "Error writing document", e);
+                }
+            });
     }
 
 }

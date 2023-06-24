@@ -1,5 +1,7 @@
 package com.matej.cshelper.fragments;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -8,11 +10,13 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -47,7 +51,7 @@ public class OrderScanFragment extends Fragment {
     private int scrollTo = 0;
     private View root;
 
-    private List<String> components = Arrays.asList("Server","Case","MB","BP","Riser","Raid","Battery","PSU","RAM","HDD");
+    private ArrayList<String> components = OrderScanController.getInstance().getComponentsNames();
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,7 +78,6 @@ public class OrderScanFragment extends Fragment {
                     if(!value.isEmpty())
                     {
                         arrayList.get(arrayList.size()-1).pn = value;
-                        arrayList.add(new Component("", null));
                     }
                 }
             }
@@ -109,9 +112,17 @@ public class OrderScanFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        root = inflater.inflate(R.layout.fragment_order_scan, container, false);
-        mainLayout = root.findViewById(R.id.order_scan_main_layout);
         this.inflater = inflater;
+        this.root = inflater.inflate(R.layout.fragment_order_scan, container, false);
+        redrawLayout();
+        return root;
+    }
+
+    private void redrawLayout()
+    {
+        components = OrderScanController.getInstance().getComponentsNames();
+        mainLayout = this.root.findViewById(R.id.order_scan_main_layout);
+        mainLayout.removeAllViews();
         ((MainActivity) getActivity()).setActionBarTitle("Scanner");
         for(String component : components)
         {
@@ -120,6 +131,13 @@ public class OrderScanFragment extends Fragment {
             mainLayout.addView(item);
             if(!scannedItems.containsKey(component))
                 scannedItems.put(component, new ScanComponent(component));
+            item.findViewById(R.id.button_add_pn).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    OrderScanController.getInstance().getComponents().get(component).pns.add(new Component("", null));
+                    redrawLayout();
+                }
+            });
             for(int i=0; i < scannedItems.get(component).pns.size(); i++)
             {
                 Component componentPn = scannedItems.get(component).pns.get(i);
@@ -154,9 +172,11 @@ public class OrderScanFragment extends Fragment {
                         args.putInt(ScanFragment.ARG_SOURCE, 2);
                         args.putString(ScanFragment.ARG_SOURCE_PAYLOAD, component);
                         args.putInt(ARG_SCROLL_TO, root.findViewById(R.id.order_scan_scroll_view).getScrollY());
+                        args.putString(ScanFragment.ARG_COMPONENT_NAME, "PN for: " + component);
                         NavHostFragment.findNavController(instance).navigate(R.id.scanFragment,args);
                     }
                 });
+
                 pnView.findViewById(R.id.add_sn_button).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -176,15 +196,44 @@ public class OrderScanFragment extends Fragment {
                 ((LinearLayout)item.findViewById(R.id.order_scan_pns_layout)).addView(pnView);
             }
         }
+        Button addComponent = new Button(MainActivity.getContext());
+        addComponent.setText("Add component");
+        addComponent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.getInstance());
+                builder.setTitle("Enter component name");
+                final EditText input = new EditText(MainActivity.getInstance());
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                builder.setView(input);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String name = input.getText().toString();
+                        OrderScanController.getInstance().getComponentsNames().add(input.getText().toString());
+                        redrawLayout();
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
+            }
+        });
+        mainLayout.addView(addComponent);
         OrderScanController.getInstance().setComponents(scannedItems);
         Log.d(TAG, "Scrollto: " + scrollTo + "    ");
         if(scrollTo != 0)
         {
-           ScrollView scroll = root.findViewById(R.id.order_scan_scroll_view);
-           scroll.post(new Runnable() {
-            @Override
-            public void run() {
-                scroll.scrollTo(0, scrollTo);
+            ScrollView scroll = root.findViewById(R.id.order_scan_scroll_view);
+            scroll.post(new Runnable() {
+                @Override
+                public void run() {
+                    scroll.scrollTo(0, scrollTo);
                 }
             });
         }
@@ -206,8 +255,22 @@ public class OrderScanFragment extends Fragment {
             }
         });
         ((EditText)root.findViewById(R.id.ticket_number_input)).setText(OrderScanController.getInstance().ticketID);
+        ((EditText)root.findViewById(R.id.ticket_number_input)).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-        return root;
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                OrderScanController.getInstance().ticketID = editable.toString();
+            }
+        });
     }
 
     private void addSn(ViewGroup pnLayout, Component component, String componentName, String value)
@@ -222,6 +285,7 @@ public class OrderScanFragment extends Fragment {
                 args.putString(ScanFragment.ARG_SOURCE_PAYLOAD, componentName + "|" + component.pn + "|" + pnLayout.getChildCount());
                 args.putInt(ScanFragment.ARG_SOURCE, 2);
                 args.putInt(ARG_SCROLL_TO, root.findViewById(R.id.order_scan_scroll_view).getScrollY());
+                args.putString(ScanFragment.ARG_COMPONENT_NAME, "Serial number for: " + component.name);
                 NavHostFragment.findNavController(instance).navigate(R.id.scanFragment,args);
             }
         });

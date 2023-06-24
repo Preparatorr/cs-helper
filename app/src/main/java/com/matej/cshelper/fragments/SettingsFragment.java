@@ -1,10 +1,13 @@
 package com.matej.cshelper.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +17,8 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.google.gson.Gson;
 import com.matej.cshelper.MainActivity;
 import com.matej.cshelper.R;
+import com.matej.cshelper.network.firebase.FirebaseConnector;
+import com.matej.cshelper.network.redmine.RedmineConnector;
 import com.matej.cshelper.settings.User;
 import com.matej.cshelper.settings.UserManager;
 
@@ -23,6 +28,9 @@ public class SettingsFragment extends Fragment {
 
     private static final String TAG = "SETTINGS";
     public static final String ARG_USERID = "UserID";
+
+    public static boolean SendEmailsEnabled = false;
+    private static final int pic_id = 666;
 
     private int userID;
 
@@ -39,6 +47,10 @@ public class SettingsFragment extends Fragment {
             public void onClick(View view) {
                 switchUser();
             }
+        });
+        ((Switch)this.layout.findViewById(R.id.emails_sending)).setOnCheckedChangeListener((compoundButton, b) -> {
+            SendEmailsEnabled = b;
+            FirebaseConnector.getInstance().SetEmailNotifications(b);
         });
         return this.layout;
     }
@@ -63,6 +75,7 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
     }
 
     void switchUser()

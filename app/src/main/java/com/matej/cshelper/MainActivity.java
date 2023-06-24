@@ -1,5 +1,6 @@
 package com.matej.cshelper;
 
+import androidx.activity.result.ActivityResultCallerLauncher;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -7,6 +8,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.Navigation;
@@ -16,7 +18,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,10 +38,16 @@ import com.matej.cshelper.fragments.OrderScanFragment;
 import com.matej.cshelper.fragments.OrdersFragment;
 import com.matej.cshelper.fragments.helpers.OrderListController;
 import com.matej.cshelper.fragments.helpers.OrderProcessingManager;
+import com.matej.cshelper.network.GoogleDriveSender;
 import com.matej.cshelper.network.OnFinishedCallback;
 import com.matej.cshelper.network.firebase.FirebaseConnector;
 import com.matej.cshelper.network.redmine.RedmineConnector;
 import com.matej.cshelper.settings.UserManager;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements OnFinishedCallback {
 
@@ -46,6 +57,9 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
 
     private static Context context;
     private static MainActivity instance;
+    private ActivityResultLauncher<Intent> startActivityForResult;
+    private String currentPhotoPath = "";
+    private String ticketID = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +72,17 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.menu_open, R.string.menu_close);
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
+
+
+        startActivityForResult = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == AppCompatActivity.RESULT_OK) {
+                        Intent data = result.getData();
+                        GoogleDriveSender.getInstance().sendPhotoToDrive(currentPhotoPath, ticketID);
+                    }
+                }
+        );
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -148,6 +173,39 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
     public void refreshUser()
     {
         ((TextView)findViewById(R.id.user_text_view)).setText("User: " + UserManager.getInstance().getCurrentUser().Name);
+    }
+
+    public void runCamera(String ticketID)
+    {
+        this.ticketID = ticketID;
+        File photoFile = null;
+        try {
+            photoFile = createImageFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Uri photoURI = FileProvider.getUriForFile(this,
+                "com.matej.cshelper.fileprovider",
+                photoFile);
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+        startActivityForResult.launch(cameraIntent);
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
     }
 
     @Override

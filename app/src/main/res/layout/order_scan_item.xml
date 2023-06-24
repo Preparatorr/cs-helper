@@ -34,5 +34,14 @@
 
     </LinearLayout>
 
+    <Button
+        android:id="@+id/button_add_pn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:text="Add PN"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/order_scan_pns_layout" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

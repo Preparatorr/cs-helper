@@ -277,6 +277,7 @@ public class OrderProcessingFragment extends Fragment implements OrderProcessing
         else
             ((TextView)mainLayout.findViewById(R.id.note_from_prep)).setVisibility(View.GONE);
         redrawLayout();
+        RedmineConnector.getInstance().addNote("Montáž serveru začala.", order.TicketID);
     }
 
     @Override

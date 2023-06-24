@@ -1,9 +1,12 @@
 package com.matej.cshelper.fragments;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.util.Size;
 import android.view.LayoutInflater;
@@ -45,6 +48,8 @@ public class ScanFragment extends Fragment {
     public static final String ARG_SOURCE = "SOURCE";
     public static final String ARG_SOURCE_PAYLOAD = "SOURCE_PAYLOAD";
 
+    public static final String ARG_COMPONENT_NAME = "COMPONENT_NAME";
+
     private int source = 0;
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
     private View layout;
@@ -55,6 +60,7 @@ public class ScanFragment extends Fragment {
     private String lastScanValue = "";
     private String payload = "";
     private int scrollTo = 0;
+    private String componentName = "";
     private ScanFragment instance;
 
     private boolean torchOn = false;
@@ -85,6 +91,7 @@ public class ScanFragment extends Fragment {
                 returnScannedValue();
             }
         });
+        ((TextView)layout.findViewById(R.id.component_scan_name)).setText(componentName);
         return this.layout;
     }
 
@@ -99,6 +106,8 @@ public class ScanFragment extends Fragment {
                 this.payload = getArguments().getString(ARG_SOURCE_PAYLOAD);
             if(getArguments().containsKey(OrderScanFragment.ARG_SCROLL_TO))
                 this.scrollTo = getArguments().getInt(OrderScanFragment.ARG_SCROLL_TO);
+            if(getArguments().containsKey(ARG_COMPONENT_NAME))
+                this.componentName = getArguments().getString(ARG_COMPONENT_NAME);
         }
         instance = this;
     }
@@ -153,8 +162,16 @@ public class ScanFragment extends Fragment {
                     //Log.d("KOKO          ", "h: " + image.getHeight() + " w: " + image.getWidth());
                     processImage(scanner, image);
                 });
-        Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview, analysis);
-        this.camera = camera;
+        try
+        {
+            Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview, analysis);
+            this.camera = camera;
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, "Something went wrong\nScanned value:" + lastScanValue + "\nPayload:" + payload);
+        }
+
     }
 
     @SuppressLint("UnsafeOptInUsageError")
@@ -176,6 +193,12 @@ public class ScanFragment extends Fragment {
                             Barcode barcode = barcodeList.get(0);
                             if (barcode != null) {
                                 String value = barcode.getRawValue();
+                                if(!value.equals(lastScanValue))
+                                {
+                                    getContext();
+                                    Vibrator v = (Vibrator) MainActivity.getInstance().getSystemService(Context.VIBRATOR_SERVICE);
+                                    v.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE));
+                                }
                                 lastScanValue = value;
                                 barcodeValue.setText("Scan: " + lastScanValue);
                             }

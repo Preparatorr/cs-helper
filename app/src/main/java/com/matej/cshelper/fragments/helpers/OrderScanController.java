@@ -4,12 +4,16 @@ import android.util.Log;
 
 import com.matej.cshelper.storage.ScanComponent;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class OrderScanController {
     private static OrderScanController instance;
 
     private HashMap<String, ScanComponent> components;
+
+    private ArrayList<String> componentsNames = new ArrayList<>(Arrays.asList("Server","Case","MB","BP","Riser","Raid","Battery","PSU","RAM","HDD"));
 
     public static OrderScanController getInstance()
     {
@@ -24,6 +28,11 @@ public class OrderScanController {
 
     public void setComponents(HashMap<String, ScanComponent> components) {
         this.components = components;
+    }
+
+    public ArrayList<String> getComponentsNames()
+    {
+        return componentsNames;
     }
 
     public String ticketID = "";

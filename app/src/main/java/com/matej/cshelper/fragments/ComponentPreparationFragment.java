@@ -126,6 +126,7 @@ public class ComponentPreparationFragment extends Fragment implements OrderProce
             public void onClick(View view) {
                 Log.d(TAG,"Order done!");
                 order.Status = OrderProcess.OrderStatus.COMPONENT_PREPARATION_DONE;
+                RedmineConnector.getInstance().addNote("Příprava komponent pro server dokončena.", order.TicketID);
 
                 OrderProcessingManager.getInstance().saveFirebaseOrder(order);
                 StringBuilder preparationMessage = new StringBuilder("Připrava serveru HOTOVÁ");
@@ -162,6 +163,7 @@ public class ComponentPreparationFragment extends Fragment implements OrderProce
         ((TextView)mainLayout.findViewById(R.id.order_process_company)).setText(order.Company);
         ((TextView)mainLayout.findViewById(R.id.note_from_prep)).setVisibility(View.GONE);
         ((MainActivity) getActivity()).setActionBarTitle("Ticket: " + order.TicketID);
+        RedmineConnector.getInstance().addNote("Příprava komponent pro server začala.", order.TicketID);
         redrawLayout();
     }
 

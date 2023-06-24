@@ -26,6 +26,8 @@ import com.matej.cshelper.storage.ComponentProcess;
 import com.matej.cshelper.storage.OrderProcess;
 import com.matej.cshelper.storage.ProcessStep;
 
+import java.io.File;
+
 
 public class ExpeditionFragment extends Fragment implements OrderProcessingManager.GetOrderCallback {
 
@@ -119,6 +121,16 @@ public class ExpeditionFragment extends Fragment implements OrderProcessingManag
         EditText notes = new EditText(MainActivity.getContext());
         notes.setHint("Add notes");
         stepsLayout.addView(notes);
+
+        Button takePhoto = new Button(MainActivity.getContext());
+        takePhoto.setText("Take photo");
+        takePhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                    MainActivity.getInstance().runCamera(order.OrderID + "|" + order.TicketID);
+            }
+        });
+        stepsLayout.addView(takePhoto);
         Button nextStep = new Button(MainActivity.getContext());
         nextStep.setText("DONE");
         nextStep.setOnClickListener(new View.OnClickListener() {
@@ -164,6 +176,7 @@ public class ExpeditionFragment extends Fragment implements OrderProcessingManag
         ((TextView)mainLayout.findViewById(R.id.order_process_company)).setText(order.Company);
         ((TextView)mainLayout.findViewById(R.id.note_from_prep)).setVisibility(View.GONE);
         ((MainActivity) getActivity()).setActionBarTitle("Ticket: " + order.TicketID);
+        RedmineConnector.getInstance().addNote("Expedice serveru začala.", order.TicketID);
         redrawLayout();
     }
 

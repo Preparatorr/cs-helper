@@ -1,16 +1,11 @@
 package com.matej.cshelper.network.redmine;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.view.ContextThemeWrapper;
-
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.matej.cshelper.MainActivity;
-import com.matej.cshelper.R;
 import com.matej.cshelper.config.SecretKeys;
+import com.matej.cshelper.fragments.SettingsFragment;
 import com.matej.cshelper.network.WebRequest;
 import com.matej.cshelper.network.redmine.entities.*;
 import com.matej.cshelper.storage.OrderProcess;
@@ -18,16 +13,26 @@ import com.matej.cshelper.storage.OrderProcess;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 public class RedmineConnector {
 
     private static String TAG = "RedmineConnector";
     private static RedmineConnector instance = null;
     public LocalDateTime LastSync;
+
+    public HashMap<String, String> EmailMessages;
 
     public static RedmineConnector getInstance()
     {
@@ -117,6 +122,39 @@ public class RedmineConnector {
         String response = request.Invoke();
         Log.d(TAG +"Response",response);
         return true;
+    }
+
+    public void SendEmailMessage(String key, String ticket)
+    {
+        if(!SettingsFragment.SendEmailsEnabled)
+            return;
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            JSONObject notesObject = new JSONObject();
+            notesObject.put("issue_id", Integer.parseInt(ticket));
+            notesObject.put("content", EmailMessages.get(key));
+            jsonObject.put("message", notesObject);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        String url = SecretKeys.getInstance().RedmineURL + "helpdesk/email_note.json";
+        Log.d(TAG,url);
+        String body = jsonObject.toString();
+        Log.d(TAG,body);
+        WebRequest request = new WebRequest(url, WebRequest.Method.Post,body);
+        String response = request.Invoke();
+        Log.d(TAG, "Response" + response);
+        /*JSONObject jsonObject = new JSONObject();
+        try {
+            JSONObject notesObject = new JSONObject();
+            notesObject.put("content", EmailMessages.get(key));
+            notesObject.put("issue_id", Integer.parseInt(ticket));
+            jsonObject.put("message", notesObject);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }*/
+
     }
 
     public boolean updateSerialNumbers(String issue, String value)
