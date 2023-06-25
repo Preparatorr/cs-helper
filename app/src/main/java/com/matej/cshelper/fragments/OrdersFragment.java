@@ -10,14 +10,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.view.ContextThemeWrapper;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,7 +23,6 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.matej.cshelper.MainActivity;
 import com.matej.cshelper.R;
-import com.matej.cshelper.core.InstanceProvider;
 import com.matej.cshelper.fragments.helpers.OrderListController;
 import com.matej.cshelper.fragments.helpers.OrderProcessingManager;
 import com.matej.cshelper.network.redmine.entities.Order;

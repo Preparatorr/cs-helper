@@ -63,6 +63,8 @@ public class ScanFragment extends Fragment {
     private String componentName = "";
     private ScanFragment instance;
 
+    private String ticketID = "";
+
     private boolean torchOn = false;
 
     @Override
@@ -108,6 +110,7 @@ public class ScanFragment extends Fragment {
                 this.scrollTo = getArguments().getInt(OrderScanFragment.ARG_SCROLL_TO);
             if(getArguments().containsKey(ARG_COMPONENT_NAME))
                 this.componentName = getArguments().getString(ARG_COMPONENT_NAME);
+            this.ticketID = getArguments().getString(OrderScanFragment.ARG_TICKET_ID, "");
         }
         instance = this;
     }
@@ -235,6 +238,7 @@ public class ScanFragment extends Fragment {
                 args.putString(OrderScanFragment.ARG_SCAN, lastScanValue);
                 args.putString(ARG_SOURCE_PAYLOAD, payload);
                 args.putInt(OrderScanFragment.ARG_SCROLL_TO, scrollTo);
+                args.putString(OrderScanFragment.ARG_TICKET_ID, ticketID);
                 NavHostFragment.findNavController(instance).navigate(R.id.orderScanFragment,args);
                 break;
         }

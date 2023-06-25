@@ -14,7 +14,6 @@ public class ScanComponent {
     public ScanComponent(String componentName) {
         this.componentName = componentName;
         this.pns = new ArrayList<>();
-        this.pns.add(new Component("", componentName));
     }
 
     @NonNull

@@ -44,4 +44,9 @@
         android:name="com.matej.cshelper.fragments.OrderScanFragment"
         android:label="fragment_order_scan"
         tools:layout="@layout/fragment_order_scan" />
+    <fragment
+        android:id="@+id/scanListFragment"
+        android:name="com.matej.cshelper.fragments.ScanListFragment"
+        android:label="fragment_scan_list"
+        tools:layout="@layout/fragment_scan_list" />
 </navigation>

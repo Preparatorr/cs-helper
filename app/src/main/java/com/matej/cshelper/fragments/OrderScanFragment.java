@@ -22,7 +22,6 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.matej.cshelper.MainActivity;
@@ -31,11 +30,10 @@ import com.matej.cshelper.fragments.helpers.OrderScanController;
 import com.matej.cshelper.network.redmine.RedmineConnector;
 import com.matej.cshelper.storage.Component;
 import com.matej.cshelper.storage.ScanComponent;
+import com.matej.cshelper.storage.ScanOrder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 
 public class OrderScanFragment extends Fragment {
     public static final String TAG = "OrdersScanFragment";
@@ -45,66 +43,46 @@ public class OrderScanFragment extends Fragment {
     LinearLayout mainLayout;
     LayoutInflater inflater;
     OrderScanFragment instance;
-
-    private HashMap<String, ScanComponent> scannedItems;
+    private String ticketID;
 
     private int scrollTo = 0;
     private View root;
 
-    private ArrayList<String> components = OrderScanController.getInstance().getComponentsNames();
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         instance = this;
-        scannedItems = new HashMap<>();
         if (getArguments() != null)
         {
             String payload = getArguments().getString(ScanFragment.ARG_SOURCE_PAYLOAD, "");
             String value = getArguments().getString(ARG_SCAN, "");
             this.scrollTo = getArguments().getInt(ARG_SCROLL_TO, 0);
-            String ticketId = getArguments().getString(ARG_TICKET_ID,"");
-            if(!ticketId.isEmpty())
-                OrderScanController.getInstance().ticketID = ticketId;
+            ticketID = getArguments().getString(ARG_TICKET_ID,"");
             if(payload.isEmpty())
                 return;
-            scannedItems = OrderScanController.getInstance().getComponents();
+
             String[] payloadArr = payload.split("\\|");
             Log.d(TAG, "Get from scan = " + Arrays.toString(payloadArr));
+            //PN Scanned
             if(payloadArr.length == 1)
             {
-                ArrayList<Component> arrayList = scannedItems.get(payload).pns;
-                if(arrayList.size() > 0)
-                {
-                    if(!value.isEmpty())
-                    {
-                        arrayList.get(arrayList.size()-1).pn = value;
-                    }
-                }
+                OrderScanController.getInstance().getOrder(ticketID).addPn(payload, value);
             }
             else
             {
-                ArrayList<Component> components = scannedItems.get(payloadArr[0]).pns;
-                for(Component component : components)
-                {
-                    if(component.pn.equals(payloadArr[1]))
-                    {
-                        component.serials.set((Integer.parseInt(payloadArr[2]) - 1), value);
-                        /*if(component.name.equals("RAM"))
-                        {
-                            Bundle args = new Bundle();
-                            args.putInt(ScanFragment.ARG_SOURCE, 2);
-                            args.putString(ScanFragment.ARG_SOURCE_PAYLOAD, component.name);
-                            //args.putInt(ARG_SCROLL_TO, root.findViewById(R.id.order_scan_scroll_view).getScrollY());
-                            NavHostFragment.findNavController(instance).navigate(R.id.scanFragment,args);
-                        }*/
-                    }
-                }
+                //SN scanned
+                ArrayList<Component> components = OrderScanController.getInstance().getOrder(ticketID).getComponent(payloadArr[0]).pns;
+                OrderScanController.getInstance().getOrder(ticketID).addSn(payloadArr[0], payloadArr[1], value);
             }
             Bundle bundle = new Bundle();
-            bundle.putString("ScannedValue", ticketId);
+            bundle.putString("ScannedValue", ticketID);
             bundle.putString("SerialNumbers", printScan());
-            bundle.putString("HashMap", OrderScanController.getInstance().getComponents().toString());
+            bundle.putString("HashMap", OrderScanController.getInstance().getOrder(ticketID).getComponents().toString());
             FirebaseAnalytics.getInstance(MainActivity.getContext()).logEvent("scan_on_create", bundle);
+        }
+        else
+        {
+            ticketID = "";
         }
     }
 
@@ -112,35 +90,51 @@ public class OrderScanFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
+        ((MainActivity) getActivity()).setActionBarTitle("Scanner");
         this.inflater = inflater;
         this.root = inflater.inflate(R.layout.fragment_order_scan, container, false);
+        if(ticketID.isEmpty())
+        {
+            showInputDialog("Enter ticketID", new OnInputDialogAction() {
+                @Override
+                public void done(String input) {
+                    ticketID = input;
+                    ((EditText)root.findViewById(R.id.ticket_number_input)).setText(ticketID);
+                    redrawLayout();
+                }
+
+                @Override
+                public void cancel() {
+                    showInputDialog("TicketID is mandatory!", this);
+                }
+            });
+        }
         redrawLayout();
         return root;
     }
 
     private void redrawLayout()
     {
-        components = OrderScanController.getInstance().getComponentsNames();
+        ((EditText)root.findViewById(R.id.ticket_number_input)).setText(ticketID);
+        ArrayList<String> components = OrderScanController.getInstance().getOrder(ticketID).getComponentsNames();
         mainLayout = this.root.findViewById(R.id.order_scan_main_layout);
         mainLayout.removeAllViews();
-        ((MainActivity) getActivity()).setActionBarTitle("Scanner");
+
         for(String component : components)
         {
             View item = inflater.inflate(R.layout.order_scan_item,(ViewGroup) root,false);
             ((TextView)item.findViewById(R.id.scan_component_name)).setText(component);
             mainLayout.addView(item);
-            if(!scannedItems.containsKey(component))
-                scannedItems.put(component, new ScanComponent(component));
             item.findViewById(R.id.button_add_pn).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    OrderScanController.getInstance().getComponents().get(component).pns.add(new Component("", null));
+                    OrderScanController.getInstance().getOrder(ticketID).addPn(component, "");
                     redrawLayout();
                 }
             });
-            for(int i=0; i < scannedItems.get(component).pns.size(); i++)
+            for(int i = 0; i < OrderScanController.getInstance().getOrder(ticketID).getComponent(component).pns.size(); i++)
             {
-                Component componentPn = scannedItems.get(component).pns.get(i);
+                Component componentPn = OrderScanController.getInstance().getOrder(ticketID).getComponent(component).pns.get(i);
                 View pnView = inflater.inflate(R.layout.order_scan_component_inner,(ViewGroup) root,false);
                 EditText inputPn =((EditText)pnView.findViewById(R.id.scan_input_pn));
                 inputPn.setText(componentPn.pn);
@@ -173,6 +167,7 @@ public class OrderScanFragment extends Fragment {
                         args.putString(ScanFragment.ARG_SOURCE_PAYLOAD, component);
                         args.putInt(ARG_SCROLL_TO, root.findViewById(R.id.order_scan_scroll_view).getScrollY());
                         args.putString(ScanFragment.ARG_COMPONENT_NAME, "PN for: " + component);
+                        args.putString(ARG_TICKET_ID, ticketID);
                         NavHostFragment.findNavController(instance).navigate(R.id.scanFragment,args);
                     }
                 });
@@ -198,34 +193,17 @@ public class OrderScanFragment extends Fragment {
         }
         Button addComponent = new Button(MainActivity.getContext());
         addComponent.setText("Add component");
-        addComponent.setOnClickListener(new View.OnClickListener() {
+        addComponent.setOnClickListener(view -> showInputDialog("Enter component name", new OnInputDialogAction() {
             @Override
-            public void onClick(View view) {
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.getInstance());
-                builder.setTitle("Enter component name");
-                final EditText input = new EditText(MainActivity.getInstance());
-                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                builder.setView(input);
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String name = input.getText().toString();
-                        OrderScanController.getInstance().getComponentsNames().add(input.getText().toString());
-                        redrawLayout();
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-                builder.show();
+            public void done(String input) {
+                OrderScanController.getInstance().getOrder(ticketID).addComponent(input);
+                redrawLayout();
             }
-        });
+            @Override
+            public void cancel() {
+            }
+        }));
         mainLayout.addView(addComponent);
-        OrderScanController.getInstance().setComponents(scannedItems);
         Log.d(TAG, "Scrollto: " + scrollTo + "    ");
         if(scrollTo != 0)
         {
@@ -254,7 +232,6 @@ public class OrderScanFragment extends Fragment {
 
             }
         });
-        ((EditText)root.findViewById(R.id.ticket_number_input)).setText(OrderScanController.getInstance().ticketID);
         ((EditText)root.findViewById(R.id.ticket_number_input)).addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -268,7 +245,7 @@ public class OrderScanFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                OrderScanController.getInstance().ticketID = editable.toString();
+                ticketID = editable.toString();
             }
         });
     }
@@ -285,7 +262,8 @@ public class OrderScanFragment extends Fragment {
                 args.putString(ScanFragment.ARG_SOURCE_PAYLOAD, componentName + "|" + component.pn + "|" + pnLayout.getChildCount());
                 args.putInt(ScanFragment.ARG_SOURCE, 2);
                 args.putInt(ARG_SCROLL_TO, root.findViewById(R.id.order_scan_scroll_view).getScrollY());
-                args.putString(ScanFragment.ARG_COMPONENT_NAME, "Serial number for: " + component.name);
+                args.putString(ScanFragment.ARG_COMPONENT_NAME, "Serial number for: " + (component.name.isEmpty()?componentName : component.name));
+                args.putString(ARG_TICKET_ID, ticketID);
                 NavHostFragment.findNavController(instance).navigate(R.id.scanFragment,args);
             }
         });
@@ -316,24 +294,43 @@ public class OrderScanFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        /*Gson gson = new Gson();
-        String json = gson.toJson(scannedItems);
-
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("scanCache", json);
-        editor.commit();*/
+        //OrderScanController.getInstance().saveOrders();
     }
 
     private String printScan()
     {
         StringBuilder result = new StringBuilder();
-        for(String componentName : components)
+        for(String componentName : OrderScanController.getInstance().getOrder(ticketID).getComponentsNames())
         {
-            ScanComponent componentPn = scannedItems.get(componentName);
+            ScanComponent componentPn = OrderScanController.getInstance().getOrder(ticketID).getComponent(componentName);
             if(!componentPn.toString().isEmpty())
                 result.append("\n").append(componentName).append(": ").append(componentPn);
         }
         return result.toString();
+    }
+
+    private void showInputDialog(String title, OnInputDialogAction action)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.getInstance());
+        builder.setTitle(title);
+        final EditText input = new EditText(MainActivity.getInstance());
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+        builder.setCancelable(false);
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            String name = input.getText().toString();
+            action.done(name);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> {
+            dialog.cancel();
+            action.cancel();
+        });
+        builder.show();
+    }
+
+    interface OnInputDialogAction
+    {
+        void done(String input);
+        void cancel();
     }
 }

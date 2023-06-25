@@ -22,7 +22,6 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.google.android.material.snackbar.Snackbar;
 import com.matej.cshelper.MainActivity;
 import com.matej.cshelper.R;
-import com.matej.cshelper.core.InstanceProvider;
 import com.matej.cshelper.fragments.helpers.OrderProcessingManager;
 import com.matej.cshelper.network.redmine.RedmineConnector;
 import com.matej.cshelper.storage.ComponentProcess;
