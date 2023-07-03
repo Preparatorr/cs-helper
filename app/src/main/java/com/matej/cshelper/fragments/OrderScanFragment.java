@@ -74,11 +74,6 @@ public class OrderScanFragment extends Fragment {
                 ArrayList<Component> components = OrderScanController.getInstance().getOrder(ticketID).getComponent(payloadArr[0]).pns;
                 OrderScanController.getInstance().getOrder(ticketID).addSn(payloadArr[0], payloadArr[1], value);
             }
-            Bundle bundle = new Bundle();
-            bundle.putString("ScannedValue", ticketID);
-            bundle.putString("SerialNumbers", printScan());
-            bundle.putString("HashMap", OrderScanController.getInstance().getOrder(ticketID).getComponents().toString());
-            FirebaseAnalytics.getInstance(MainActivity.getContext()).logEvent("scan_on_create", bundle);
         }
         else
         {
@@ -137,6 +132,8 @@ public class OrderScanFragment extends Fragment {
                 Component componentPn = OrderScanController.getInstance().getOrder(ticketID).getComponent(component).pns.get(i);
                 View pnView = inflater.inflate(R.layout.order_scan_component_inner,(ViewGroup) root,false);
                 EditText inputPn =((EditText)pnView.findViewById(R.id.scan_input_pn));
+                if(componentPn == null)
+                    continue;
                 inputPn.setText(componentPn.pn);
                 inputPn.addTextChangedListener(new TextWatcher() {
                     @Override
@@ -178,6 +175,10 @@ public class OrderScanFragment extends Fragment {
                         addSn(pnView.findViewById(R.id.sns_layout),componentPn, component, "");
                         componentPn.serials.add("");
                     }
+                });
+                pnView.findViewById(R.id.delete_pn_button).setOnClickListener((v)-> {
+                    OrderScanController.getInstance().getOrder(ticketID).deletePn(component, componentPn.pn);
+                    redrawLayout();
                 });
                 for(String sn : componentPn.serials)
                 {

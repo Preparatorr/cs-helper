@@ -68,6 +68,15 @@ public class ScanOrder
         OrderScanController.getInstance().saveOrders();
     }
 
+    public void deletePn(String componentName, String pn)
+    {
+        for(int i=0; i< components.get(componentName).pns.size(); i++)
+        {
+            if(components.get(componentName).pns.get(i).pn.equals(pn))
+                components.get(componentName).pns.remove(i);
+        }
+    }
+
     public void addSn(String componentName, String pn, String sn)
     {
         //if(components.get(componentName).pns == null)
