@@ -22,7 +22,7 @@ public class ScanComponent {
         StringBuilder result = new StringBuilder();
         for(Component component : pns)
         {
-            if(component.toString().isEmpty())
+            if(component == null || component.toString().isEmpty())
                 continue;
             if(component.pn.isEmpty() && pns.size() == 1)
                 result.append(component);

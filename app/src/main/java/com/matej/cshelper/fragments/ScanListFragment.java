@@ -37,14 +37,29 @@ public class ScanListFragment extends Fragment {
 
         root = inflater.inflate(R.layout.fragment_scan_list, container, false);
         list = root.findViewById(R.id.scan_list);
+
+        redrawLayout(inflater);
+        return root;
+    }
+
+    private void redrawLayout(LayoutInflater inflater)
+    {
+        ((ViewGroup)root.findViewById(R.id.scan_list)).removeAllViews();
         for(String ticketId : OrderScanController.getInstance().getOrders().keySet())
         {
+            if(ticketId.isEmpty())
+                continue;
             View item = inflater.inflate(R.layout.scan_list_item, list, false);
             ((TextView)item.findViewById(R.id.ticket_number_text)).setText(ticketId);
-            item.setOnClickListener(view -> {
+            item.findViewById(R.id.ticket_number_text).setOnClickListener(view -> {
                 Bundle args = new Bundle();
                 args.putString(ARG_TICKET_ID, ticketId);
                 NavHostFragment.findNavController(instance).navigate(R.id.orderScanFragment,args);
+            });
+
+            item.findViewById(R.id.button_delete_scan).setOnClickListener((v)->{
+                OrderScanController.getInstance().deleteScan(ticketId);
+                redrawLayout(inflater);
             });
 
             list.addView(item);
@@ -54,6 +69,5 @@ public class ScanListFragment extends Fragment {
             Bundle args = new Bundle();
             NavHostFragment.findNavController(instance).navigate(R.id.orderScanFragment,args);
         });
-        return root;
     }
 }

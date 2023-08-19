@@ -20,6 +20,6 @@ public class Component {
     @NonNull
     @Override
     public String toString() {
-        return (!serials.contains(""))? String.join(", ", serials) + ";" : "";
+        return (serials.toString().length() > 4)? String.join(", ", serials) + ";" : "";
     }
 }

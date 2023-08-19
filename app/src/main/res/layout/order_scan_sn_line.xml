@@ -18,10 +18,13 @@
         android:id="@+id/sn_input_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
         android:ems="10"
         android:hint="serial number"
         android:inputType="textPersonName"
         android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@+id/delete_sn_button"
         app:layout_constraintStart_toEndOf="@+id/sn_text_view"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -29,7 +32,15 @@
         android:id="@+id/scan_sn_button"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        app:layout_constraintStart_toEndOf="@+id/sn_input_text"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_baseline_qr_code_scanner_24" />
+
+    <ImageButton
+        android:id="@+id/delete_sn_button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintEnd_toStartOf="@+id/scan_sn_button"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/baseline_delete_24" />
 </androidx.constraintlayout.widget.ConstraintLayout>

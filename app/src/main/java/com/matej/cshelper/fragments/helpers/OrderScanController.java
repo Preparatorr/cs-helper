@@ -10,6 +10,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.matej.cshelper.config.SecretKeys;
@@ -112,6 +113,18 @@ public class OrderScanController {
                 Log.d(TAG, "get failed with ", task.getException());
             }
         });
+    }
+
+    public void deleteScan(String ticketId)
+    {
+        DocumentReference scans = db.collection("scan").document("scan-db");
+        Map<String,Object> updates = new HashMap<>();
+        updates.put(ticketId, FieldValue.delete());
+        scans.update(updates).addOnCompleteListener(runnable -> {
+           Log.d(TAG, "Delete done");
+        });
+        orders.remove(ticketId);
+
     }
 
     public interface OnFinished

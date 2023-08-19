@@ -75,6 +75,17 @@ public class ScanOrder
             if(components.get(componentName).pns.get(i).pn.equals(pn))
                 components.get(componentName).pns.remove(i);
         }
+        OrderScanController.getInstance().saveOrders();
+    }
+
+    public void deleteSn(String componentName, String pn, String sn)
+    {
+        for(int i=0; i< components.get(componentName).pns.size(); i++)
+        {
+            if(components.get(componentName).pns.get(i).pn.equals(pn) && components.get(componentName).pns.get(i).serials.contains(sn))
+                components.get(componentName).pns.get(i).serials.remove(sn);
+        }
+        OrderScanController.getInstance().saveOrders();
     }
 
     public void addSn(String componentName, String pn, String sn)
@@ -83,6 +94,8 @@ public class ScanOrder
         //    components.get(componentName).pns.add(new Component(pn, componentName));
         for(Component c: components.get(componentName).pns)
         {
+            if(c == null)
+                continue;
             if(c.pn.equals(pn))
             {
                 if(c.serials.get(c.serials.size()-1).isEmpty())

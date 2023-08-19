@@ -268,6 +268,11 @@ public class OrderScanFragment extends Fragment {
                 NavHostFragment.findNavController(instance).navigate(R.id.scanFragment,args);
             }
         });
+
+        snView.findViewById(R.id.delete_sn_button).setOnClickListener((v) ->{
+            OrderScanController.getInstance().getOrder(ticketID).deleteSn(componentName, component.pn, ((EditText)snView.findViewById(R.id.sn_input_text)).getText().toString());
+            redrawLayout();
+        });
         ((TextView)snView.findViewById(R.id.sn_text_view)).setText("SN " + (pnLayout.getChildCount()+1));
         EditText input = ((EditText)snView.findViewById(R.id.sn_input_text));
         input.setText(value);
@@ -307,6 +312,7 @@ public class OrderScanFragment extends Fragment {
             if(!componentPn.toString().isEmpty())
                 result.append("\n").append(componentName).append(": ").append(componentPn);
         }
+        Log.e(TAG, "Finished scan:" + ticketID + result.toString());
         return result.toString();
     }
 
