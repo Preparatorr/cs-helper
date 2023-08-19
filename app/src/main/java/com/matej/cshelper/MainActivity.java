@@ -14,8 +14,10 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.Navigation;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -50,22 +52,75 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import device.common.DecodeResult;
+import device.common.ScanConst;
+import device.sdk.ScanManager;
+
 public class MainActivity extends AppCompatActivity implements OnFinishedCallback {
 
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     ActionBarDrawerToggle actionBarDrawerToggle;
 
+    private static final String TAG = "MainActivity";
     private static Context context;
     private static MainActivity instance;
     private ActivityResultLauncher<Intent> startActivityForResult;
     private String currentPhotoPath = "";
     private String ticketID = "";
 
+    private ScanManager mScanner;
+    private DecodeResult mDecodeResult;
+    private static ScanResultReceiver mScanResultReceiver = null;
+    public class ScanResultReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mScanner != null) {
+                try {
+                    if (ScanConst.INTENT_USERMSG.equals(intent.getAction())) {
+                        mScanner.aDecodeGetResult(mDecodeResult.recycle());
+                        mScanner.aDecodeGetResult(mDecodeResult);
+                    } else if (ScanConst.INTENT_EVENT.equals(intent.getAction())) {
+                        boolean result = intent.getBooleanExtra(ScanConst.EXTRA_EVENT_DECODE_RESULT, false);
+                        int decodeBytesLength = intent.getIntExtra(ScanConst.EXTRA_EVENT_DECODE_LENGTH, 0);
+                        byte[] decodeBytesValue = intent.getByteArrayExtra(ScanConst.EXTRA_EVENT_DECODE_VALUE);
+                        String decodeValue = new String(decodeBytesValue, 0, decodeBytesLength);
+                        int decodeLength = decodeValue.length();
+                        String symbolName = intent.getStringExtra(ScanConst.EXTRA_EVENT_SYMBOL_NAME);
+                        byte symbolId = intent.getByteExtra(ScanConst.EXTRA_EVENT_SYMBOL_ID, (byte) 0);
+                        int symbolType = intent.getIntExtra(ScanConst.EXTRA_EVENT_SYMBOL_TYPE, 0);
+                        byte letter = intent.getByteExtra(ScanConst.EXTRA_EVENT_DECODE_LETTER, (byte) 0);
+                        byte modifier = intent.getByteExtra(ScanConst.EXTRA_EVENT_DECODE_MODIFIER, (byte) 0);
+                        int decodingTime = intent.getIntExtra(ScanConst.EXTRA_EVENT_DECODE_TIME, 0);
+                        Log.d(TAG, "1. result: " + result);
+                        Log.d(TAG, "2. bytes length: " + decodeBytesLength);
+                        Log.d(TAG, "3. bytes value: " + decodeBytesValue);
+                        Log.d(TAG, "4. decoding length: " + decodeLength);
+                        Log.d(TAG, "5. decoding value: " + decodeValue);
+                        Log.d(TAG, "6. symbol name: " + symbolName);
+                        Log.d(TAG, "7. symbol id: " + symbolId);
+                        Log.d(TAG, "8. symbol type: " + symbolType);
+                        Log.d(TAG, "9. decoding letter: " + letter);
+                        Log.d(TAG, "10.decoding modifier: " + modifier);
+                        Log.d(TAG, "11.decoding time: " + decodingTime);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mScanner = new ScanManager();
+        mDecodeResult = new DecodeResult();
+        mScanResultReceiver = new ScanResultReceiver();
+
         context = getApplicationContext();
         instance = this;
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -209,6 +264,20 @@ public class MainActivity extends AppCompatActivity implements OnFinishedCallbac
         // Save a file: path for use with ACTION_VIEW intents
         currentPhotoPath = image.getAbsolutePath();
         return image;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ScanConst.INTENT_USERMSG);
+        filter.addAction(ScanConst.INTENT_EVENT);
+        registerReceiver(mScanResultReceiver, filter);
+
+        Intent scannerEnableIntent = new Intent("device.common.ENABLED_SCANNER");
+        scannerEnableIntent.putExtra("EXTRA_ENABLED_SCANNER", 1);
+        sendBroadcast(scannerEnableIntent);
+
     }
 
     @Override
