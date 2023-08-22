@@ -1,7 +1,11 @@
 package com.matej.cshelper.fragments;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -35,6 +39,10 @@ import com.matej.cshelper.storage.ScanOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import device.common.DecodeResult;
+import device.common.ScanConst;
+import device.sdk.ScanManager;
+
 public class OrderScanFragment extends Fragment {
     public static final String TAG = "OrdersScanFragment";
     public static final String ARG_SCAN = "ScannedValue";
@@ -48,16 +56,83 @@ public class OrderScanFragment extends Fragment {
     private int scrollTo = 0;
     private View root;
 
+    private Bundle scanArgs;
+    private ScanManager mScanner;
+    private DecodeResult mDecodeResult;
+    private static ScanResultReceiver mScanResultReceiver = null;
+    public class ScanResultReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mScanner != null) {
+                try {
+                    if (ScanConst.INTENT_USERMSG.equals(intent.getAction())) {
+                        mScanner.aDecodeGetResult(mDecodeResult.recycle());
+                        mScanner.aDecodeGetResult(mDecodeResult);
+                    } else if (ScanConst.INTENT_EVENT.equals(intent.getAction())) {
+                        boolean result = intent.getBooleanExtra(ScanConst.EXTRA_EVENT_DECODE_RESULT, false);
+                        int decodeBytesLength = intent.getIntExtra(ScanConst.EXTRA_EVENT_DECODE_LENGTH, 0);
+                        byte[] decodeBytesValue = intent.getByteArrayExtra(ScanConst.EXTRA_EVENT_DECODE_VALUE);
+                        String decodeValue = new String(decodeBytesValue, 0, decodeBytesLength);
+                        int decodeLength = decodeValue.length();
+                        String symbolName = intent.getStringExtra(ScanConst.EXTRA_EVENT_SYMBOL_NAME);
+                        byte symbolId = intent.getByteExtra(ScanConst.EXTRA_EVENT_SYMBOL_ID, (byte) 0);
+                        int symbolType = intent.getIntExtra(ScanConst.EXTRA_EVENT_SYMBOL_TYPE, 0);
+                        byte letter = intent.getByteExtra(ScanConst.EXTRA_EVENT_DECODE_LETTER, (byte) 0);
+                        byte modifier = intent.getByteExtra(ScanConst.EXTRA_EVENT_DECODE_MODIFIER, (byte) 0);
+                        int decodingTime = intent.getIntExtra(ScanConst.EXTRA_EVENT_DECODE_TIME, 0);
+                        Log.d(TAG, "1. result: " + result);
+                        Log.d(TAG, "2. bytes length: " + decodeBytesLength);
+                        Log.d(TAG, "3. bytes value: " + decodeBytesValue);
+                        Log.d(TAG, "4. decoding length: " + decodeLength);
+                        Log.d(TAG, "5. decoding value: " + decodeValue);
+                        Log.d(TAG, "6. symbol name: " + symbolName);
+                        Log.d(TAG, "7. symbol id: " + symbolId);
+                        Log.d(TAG, "8. symbol type: " + symbolType);
+                        Log.d(TAG, "9. decoding letter: " + letter);
+                        Log.d(TAG, "10.decoding modifier: " + modifier);
+                        Log.d(TAG, "11.decoding time: " + decodingTime);
+
+
+
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ScanConst.INTENT_USERMSG);
+        filter.addAction(ScanConst.INTENT_EVENT);
+        MainActivity.getContext().registerReceiver(mScanResultReceiver, filter);
+
+        Intent scannerEnableIntent = new Intent("device.common.ENABLED_SCANNER");
+        scannerEnableIntent.putExtra("EXTRA_ENABLED_SCANNER", 1);
+        MainActivity.getContext().sendBroadcast(scannerEnableIntent);
+
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         instance = this;
+
+        mScanner = new ScanManager();
+        mDecodeResult = new DecodeResult();
+        mScanResultReceiver = new ScanResultReceiver();
+
+        ticketID = getArguments().getString(ARG_TICKET_ID,"");
+
         if (getArguments() != null)
         {
             String payload = getArguments().getString(ScanFragment.ARG_SOURCE_PAYLOAD, "");
             String value = getArguments().getString(ARG_SCAN, "");
             this.scrollTo = getArguments().getInt(ARG_SCROLL_TO, 0);
-            ticketID = getArguments().getString(ARG_TICKET_ID,"");
+
             if(payload.isEmpty())
                 return;
 
@@ -74,10 +149,6 @@ public class OrderScanFragment extends Fragment {
                 ArrayList<Component> components = OrderScanController.getInstance().getOrder(ticketID).getComponent(payloadArr[0]).pns;
                 OrderScanController.getInstance().getOrder(ticketID).addSn(payloadArr[0], payloadArr[1], value);
             }
-        }
-        else
-        {
-            ticketID = "";
         }
     }
 
@@ -165,7 +236,9 @@ public class OrderScanFragment extends Fragment {
                         args.putInt(ARG_SCROLL_TO, root.findViewById(R.id.order_scan_scroll_view).getScrollY());
                         args.putString(ScanFragment.ARG_COMPONENT_NAME, "PN for: " + component);
                         args.putString(ARG_TICKET_ID, ticketID);
-                        NavHostFragment.findNavController(instance).navigate(R.id.scanFragment,args);
+
+                        scanArgs = args;
+                        //NavHostFragment.findNavController(instance).navigate(R.id.scanFragment,args);
                     }
                 });
 
