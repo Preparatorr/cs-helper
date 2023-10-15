@@ -59,6 +59,8 @@ public class OrderScanFragment extends Fragment {
     private Bundle scanArgs;
     private ScanManager mScanner;
     private DecodeResult mDecodeResult;
+
+    private boolean scannerActive = false;
     private static ScanResultReceiver mScanResultReceiver = null;
     public class ScanResultReceiver extends BroadcastReceiver {
         @Override
@@ -92,8 +94,34 @@ public class OrderScanFragment extends Fragment {
                         Log.d(TAG, "10.decoding modifier: " + modifier);
                         Log.d(TAG, "11.decoding time: " + decodingTime);
 
+                        if(scanArgs != null)
+                        {
+                            String payload = scanArgs.getString(ScanFragment.ARG_SOURCE_PAYLOAD, "");
+                            if(!result)
+                            {
+                                return;
+                            }
+                            String value = decodeValue;
+                            scrollTo = scanArgs.getInt(ARG_SCROLL_TO, 0);
 
+                            if(payload.isEmpty())
+                                return;
 
+                            String[] payloadArr = payload.split("\\|");
+                            Log.d(TAG, "Get from scan = " + Arrays.toString(payloadArr));
+                            //PN Scanned
+                            if(payloadArr.length == 1)
+                            {
+                                OrderScanController.getInstance().getOrder(ticketID).addPn(payload, value);
+                            }
+                            else
+                            {
+                                //SN scanned
+                                ArrayList<Component> components = OrderScanController.getInstance().getOrder(ticketID).getComponent(payloadArr[0]).pns;
+                                OrderScanController.getInstance().getOrder(ticketID).addSn(payloadArr[0], payloadArr[1], value);
+                            }
+                            redrawLayout();
+                        }
                     }
                 }catch (Exception e){
                     e.printStackTrace();
@@ -125,30 +153,9 @@ public class OrderScanFragment extends Fragment {
         mDecodeResult = new DecodeResult();
         mScanResultReceiver = new ScanResultReceiver();
 
-        ticketID = getArguments().getString(ARG_TICKET_ID,"");
-
         if (getArguments() != null)
         {
-            String payload = getArguments().getString(ScanFragment.ARG_SOURCE_PAYLOAD, "");
-            String value = getArguments().getString(ARG_SCAN, "");
-            this.scrollTo = getArguments().getInt(ARG_SCROLL_TO, 0);
-
-            if(payload.isEmpty())
-                return;
-
-            String[] payloadArr = payload.split("\\|");
-            Log.d(TAG, "Get from scan = " + Arrays.toString(payloadArr));
-            //PN Scanned
-            if(payloadArr.length == 1)
-            {
-                OrderScanController.getInstance().getOrder(ticketID).addPn(payload, value);
-            }
-            else
-            {
-                //SN scanned
-                ArrayList<Component> components = OrderScanController.getInstance().getOrder(ticketID).getComponent(payloadArr[0]).pns;
-                OrderScanController.getInstance().getOrder(ticketID).addSn(payloadArr[0], payloadArr[1], value);
-            }
+            ticketID = getArguments().getString(ARG_TICKET_ID,"");
         }
     }
 
@@ -238,6 +245,12 @@ public class OrderScanFragment extends Fragment {
                         args.putString(ARG_TICKET_ID, ticketID);
 
                         scanArgs = args;
+
+                        if(scannerActive)
+                            mScanner.aDecodeSetTriggerOn(0);
+                        else
+                            mScanner.aDecodeSetTriggerOn(1);
+                        scannerActive = !scannerActive;
                         //NavHostFragment.findNavController(instance).navigate(R.id.scanFragment,args);
                     }
                 });
@@ -337,8 +350,17 @@ public class OrderScanFragment extends Fragment {
                 args.putInt(ScanFragment.ARG_SOURCE, 2);
                 args.putInt(ARG_SCROLL_TO, root.findViewById(R.id.order_scan_scroll_view).getScrollY());
                 args.putString(ScanFragment.ARG_COMPONENT_NAME, "Serial number for: " + (component.name.isEmpty()?componentName : component.name));
-                args.putString(ARG_TICKET_ID, ticketID);
-                NavHostFragment.findNavController(instance).navigate(R.id.scanFragment,args);
+                args.putString(AR-G_TICKET_ID, ticketID);
+
+                scanArgs = args;
+
+                if(scannerActive)
+                    mScanner.aDecodeSetTriggerOn(0);
+                else
+                    mScanner.aDecodeSetTriggerOn(1);
+                scannerActive = !scannerActive;
+
+                //NavHostFragment.findNavController(instance).navigate(R.id.scanFragment,args);
             }
         });
 

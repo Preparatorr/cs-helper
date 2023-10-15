@@ -8,10 +8,35 @@ X-Redmine-API-Key: c4ebe53e074b9ff64de634908307cdb820f13d7d
     {
         "id":"33071",
         "custom_fields":
-            {
+            [{
                 "id":22,
-                "value":"\nServer: 409;\nCase: 4008400395029;\nMB: 4008400395029;"
-            }
+                "value":"\nServer: 405555555559;\nCase: 4008400395029;\nMB: 4008400395029;"
+            }, "k"]
 }
 }
 
+###
+POST https://helpdesk.czech-server.cz/helpdesk/email_note.json HTTP/1.1
+Content-Type: application/json
+X-Redmine-API-Key: c4ebe53e074b9ff64de634908307cdb820f13d7d
+
+{
+    "message":
+    {
+        "issue_id": 33071,
+        "content": "Test odpovědí" 
+    }
+}
+
+###
+GET https://helpdesk.czech-server.cz/issues/33071.json HTTP/1.1
+Content-Type: application/json
+X-Redmine-API-Key: c4ebe53e074b9ff64de634908307cdb820f13d7d
+
+{
+    "message":
+    {
+        "issue_id": 33071,
+        "content": "Test odpovědí" 
+    }
+}
